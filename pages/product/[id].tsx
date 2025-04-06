@@ -12,11 +12,6 @@ export default function ProductDetail() {
   const [message, setMessage] = useState('')
   const [sentMessages, setSentMessages] = useState<string[]>([])
 
-  // Arvostelu
-  const [reviewRating, setReviewRating] = useState(0)
-  const [reviewComment, setReviewComment] = useState('')
-  const [reviewSubmitted, setReviewSubmitted] = useState(false)
-
   useEffect(() => {
     if (!id) return
 
@@ -31,10 +26,16 @@ export default function ProductDetail() {
       }
     }
 
-    if (loadedProduct) setProduct(loadedProduct)
+    if (loadedProduct) {
+      setProduct(loadedProduct)
+    }
 
-    const msgData = localStorage.getItem(`messages-${id}`)
-    if (msgData) setSentMessages(JSON.parse(msgData))
+    if (typeof window !== 'undefined') {
+      const msgData = localStorage.getItem(`messages-${id}`)
+      if (msgData) {
+        setSentMessages(JSON.parse(msgData))
+      }
+    }
   }, [id])
 
   const handleBuyNow = () => {
@@ -75,28 +76,14 @@ export default function ProductDetail() {
     setMessage('')
   }
 
-  const handleSubmitReview = () => {
-    const review = {
-      productId: product.id,
-      rating: reviewRating,
-      comment: reviewComment,
-      date: new Date().toISOString()
-    }
-
-    const existing = localStorage.getItem('mauktion-reviews')
-    const reviews = existing ? JSON.parse(existing) : []
-    reviews.push(review)
-    localStorage.setItem('mauktion-reviews', JSON.stringify(reviews))
-    setReviewSubmitted(true)
-  }
-
   if (!product) return <div className="p-6">Tuotetta ei löytynyt.</div>
 
   return (
     <main className="p-6">
       <div className="max-w-xl mx-auto">
         <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
-        <p className="text-xl mb-2">Hinta: {product.price}</p>
+        <p className="text-xl text-gray-800 mb-2">Hinta: {product.price}</p>
+        <p className="text-sm text-gray-600">ALV: {product.vatRate || '24%'} ({product.vatAmount || '0'} €)</p>
 
         {!hasPurchased && product.buyNow && (
           <button
@@ -108,91 +95,52 @@ export default function ProductDetail() {
         )}
 
         {hasPurchased && (
-          <div className="mt-6 space-y-6 border-t pt-4">
-            <div>
-              <h3 className="font-semibold mb-2">Valitse toimitustapa:</h3>
-              {product.pickupAvailable && (
-                <label className="block">
-                  <input
-                    type="radio"
-                    name="delivery"
-                    value="pickup"
-                    checked={deliveryChoice === 'pickup'}
-                    onChange={() => handleDeliveryChoice('pickup')}
-                    className="mr-2"
-                  />
-                  Nouto ({product.pickupLocation || 'sovitaan erikseen'})
-                </label>
-              )}
-              {product.deliveryAvailable && (
-                <label className="block">
-                  <input
-                    type="radio"
-                    name="delivery"
-                    value="delivery"
-                    checked={deliveryChoice === 'delivery'}
-                    onChange={() => handleDeliveryChoice('delivery')}
-                    className="mr-2"
-                  />
-                  Toimitus ({product.deliveryCost || 'kulut sovitaan'} €)
-                </label>
-              )}
-            </div>
-
-            {deliveryChoice && (
-              <div>
-                <h3 className="font-semibold mb-2">Viestisi myyjälle</h3>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full border rounded p-2 mb-2"
+          <div className="mt-6 border-t pt-4">
+            <h3 className="font-semibold mb-2">Valitse toimitustapa:</h3>
+            {product.pickupAvailable && (
+              <label className="block">
+                <input
+                  type="radio"
+                  name="delivery"
+                  value="pickup"
+                  checked={deliveryChoice === 'pickup'}
+                  onChange={() => handleDeliveryChoice('pickup')}
+                  className="mr-2"
                 />
-                <button
-                  onClick={handleSendMessage}
-                  className="bg-green-600 text-white px-4 py-2 rounded"
-                >
-                  Lähetä viesti
-                </button>
-              </div>
+                Nouto – {product.pickupLocation || 'sovitaan erikseen'}
+              </label>
             )}
-
-            {/* Arvostelulomake */}
-            {!reviewSubmitted && (
-              <div className="pt-4 border-t">
-                <h3 className="font-semibold mb-2">Anna arvostelu tuotteesta</h3>
-                <textarea
-                  value={reviewComment}
-                  onChange={(e) => setReviewComment(e.target.value)}
-                  className="w-full border rounded p-2 mb-2"
-                  placeholder="Kirjoita kommentti..."
+            {product.deliveryAvailable && (
+              <label className="block">
+                <input
+                  type="radio"
+                  name="delivery"
+                  value="delivery"
+                  checked={deliveryChoice === 'delivery'}
+                  onChange={() => handleDeliveryChoice('delivery')}
+                  className="mr-2"
                 />
-                <div className="flex gap-2 mb-2">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      onClick={() => setReviewRating(star)}
-                      className={`px-3 py-1 border rounded ${
-                        reviewRating === star ? 'bg-yellow-300' : ''
-                      }`}
-                    >
-                      {star} ⭐
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={handleSubmitReview}
-                  className="bg-purple-600 text-white px-4 py-2 rounded"
-                >
-                  Lähetä arvostelu
-                </button>
-              </div>
+                Toimitus – {product.deliveryCost || 'kulut sovitaan'} €
+              </label>
             )}
+          </div>
+        )}
 
-            {reviewSubmitted && (
-              <p className="text-green-700 font-medium">
-                Kiitos arvostelustasi!
-              </p>
-            )}
+        {hasPurchased && deliveryChoice && (
+          <div className="mt-6">
+            <h3 className="font-semibold mb-2">Lähetä viesti myyjälle</h3>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="w-full border p-2 mb-2 rounded"
+              rows={3}
+            />
+            <button
+              onClick={handleSendMessage}
+              className="bg-green-600 text-white px-4 py-2 rounded"
+            >
+              Lähetä viesti
+            </button>
           </div>
         )}
 
