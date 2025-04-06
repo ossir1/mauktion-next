@@ -6,13 +6,32 @@ export default function ProductDetail() {
   const router = useRouter()
   const { id } = router.query
 
-  const product = products.find((p) => p.id === Number(id)) || JSON.parse(
-    localStorage.getItem('mauktion-added-product') || 'null'
-  )
-
+  const [product, setProduct] = useState<any>(null)
   const [timeLeft, setTimeLeft] = useState('')
-  const [currentBid, setCurrentBid] = useState(product?.currentBid || 0)
+  const [currentBid, setCurrentBid] = useState(0)
   const [bidMessage, setBidMessage] = useState('')
+
+  useEffect(() => {
+    if (!id) return
+
+    const staticProduct = products.find((p) => p.id === Number(id))
+    let loadedProduct = staticProduct
+
+    if (!staticProduct && typeof window !== 'undefined') {
+      const fromStorage = localStorage.getItem('mauktion-added-product')
+      if (fromStorage) {
+        const parsed = JSON.parse(fromStorage)
+        if (parsed.id === Number(id)) {
+          loadedProduct = parsed
+        }
+      }
+    }
+
+    if (loadedProduct) {
+      setProduct(loadedProduct)
+      setCurrentBid(loadedProduct.currentBid || 0)
+    }
+  }, [id])
 
   useEffect(() => {
     if (!product?.endsAt) return
