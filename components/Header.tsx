@@ -23,6 +23,8 @@ export default function Header() {
           <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
           <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
           <Link href="/purchases" className="text-gray-700 hover:text-blue-700">Ostot</Link>
+          <Link href="/sales" className="text-gray-700 hover:text-blue-700">Myynnit</Link>
+
 
           {userName && (
             <span className="text-sm text-gray-500 ml-4">Tervetuloa, <strong>{userName}</strong></span>
