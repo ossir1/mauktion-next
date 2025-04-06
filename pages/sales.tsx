@@ -1,101 +1,62 @@
 import { useEffect, useState } from 'react'
-import Header from '../components/Header'
+import { generateReceipt } from '../utils/receipt'
 
-type Product = {
-  id: number
-  name: string
-  price: string
-  buyNow?: boolean
-  auction?: boolean
-  endsAt?: string
-  pickupAvailable?: boolean
-  pickupLocation?: string
-  deliveryAvailable?: boolean
-  deliveryCost?: string
-}
-
-export default function SalesPage() {
-  const [addedProducts, setAddedProducts] = useState<Product[]>([])
-  const [soldIds, setSoldIds] = useState<number[]>([])
-  const [deliveryChoices, setDeliveryChoices] = useState<Record<number, string>>({})
-  const [messages, setMessages] = useState<Record<number, string[]>>({})
-  const [userName, setUserName] = useState('')
+export default function Sales() {
+  const [myProducts, setMyProducts] = useState<any[]>([])
+  const [purchases, setPurchases] = useState<any[]>([])
 
   useEffect(() => {
-    const username = localStorage.getItem('mauktion-username')
-    if (username) setUserName(username)
+    const added = localStorage.getItem('mauktion-added-products')
+    const bought = localStorage.getItem('mauktion-purchases')
 
-    const stored = localStorage.getItem('mauktion-added-products')
-    if (stored) {
-      setAddedProducts(JSON.parse(stored))
-    }
-
-    const sold = localStorage.getItem('mauktion-sold-products')
-    if (sold) {
-      setSoldIds(JSON.parse(sold))
-    }
-
-    const choices: Record<number, string> = {}
-    const msgs: Record<number, string[]> = {}
-
-    for (const key in localStorage) {
-      if (key.startsWith('deliveryChoice-')) {
-        const productId = Number(key.split('-')[1])
-        choices[productId] = localStorage.getItem(key) || ''
-      }
-      if (key.startsWith('messages-')) {
-        const productId = Number(key.split('-')[1])
-        const storedMessages = localStorage.getItem(key)
-        if (storedMessages) msgs[productId] = JSON.parse(storedMessages)
-      }
-    }
-
-    setDeliveryChoices(choices)
-    setMessages(msgs)
+    setMyProducts(added ? JSON.parse(added) : [])
+    setPurchases(bought ? JSON.parse(bought) : [])
   }, [])
 
+  const isSold = (productId: number) => {
+    return purchases.some((p) => p.id === productId)
+  }
+
+  const getBuyerName = (productId: number) => {
+    const item = purchases.find((p) => p.id === productId)
+    return item?.buyerName || 'Asiakas'
+  }
+
   return (
-    <>
-      <Header />
-      <main className="p-6 max-w-5xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Myyntihistoria</h1>
+    <main className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Myyntihistoria</h1>
 
-        {userName && (
-          <p className="mb-4 text-gray-600">Käyttäjä: <strong>{userName}</strong></p>
-        )}
+      {myProducts.length === 0 ? (
+        <p>Et ole vielä lisännyt tuotteita.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {myProducts.map((product) => (
+            <div
+              key={product.id}
+              className="border rounded-lg p-4 shadow flex flex-col justify-between"
+            >
+              <div>
+                <h2 className="text-xl font-semibold mb-1">{product.name}</h2>
+                <p className="text-gray-700 mb-2">{product.price}</p>
+                {isSold(product.id) ? (
+                  <p className="text-green-700 font-medium mb-2">✅ Myyty ostajalle: {getBuyerName(product.id)}</p>
+                ) : (
+                  <p className="text-yellow-600 mb-2">⏳ Ei vielä myyty</p>
+                )}
+              </div>
 
-        {addedProducts.length === 0 ? (
-          <p>Et ole lisännyt yhtään tuotetta.</p>
-        ) : (
-          addedProducts.map((product) => (
-            <div key={product.id} className="border rounded-xl p-4 shadow mb-4">
-              <h2 className="text-xl font-semibold">{product.name}</h2>
-              <p className="text-gray-700 mb-2">Hinta: {product.price}</p>
-
-              {soldIds.includes(product.id) ? (
-                <div className="text-green-600 mb-2">✅ Tuote on myyty</div>
-              ) : (
-                <div className="text-yellow-600 mb-2">⏳ Tuote ei ole vielä myyty</div>
-              )}
-
-              {deliveryChoices[product.id] && (
-                <p>🚚 Ostaja valitsi toimitustavaksi: <strong>{deliveryChoices[product.id] === 'delivery' ? 'Toimitus' : 'Nouto'}</strong></p>
-              )}
-
-              {messages[product.id] && (
-                <div className="mt-4">
-                  <h3 className="font-semibold">📩 Viestit ostajalta:</h3>
-                  <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
-                    {messages[product.id].map((msg, idx) => (
-                      <li key={idx}>{msg}</li>
-                    ))}
-                  </ul>
-                </div>
+              {isSold(product.id) && (
+                <button
+                  onClick={() => generateReceipt(product, getBuyerName(product.id), 'seller')}
+                  className="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  📄 Lataa myyntikuitti
+                </button>
               )}
             </div>
-          ))
-        )}
-      </main>
-    </>
+          ))}
+        </div>
+      )}
+    </main>
   )
 }
