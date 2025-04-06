@@ -12,11 +12,14 @@ export function generateReceipt(product: any, buyerName: string = 'Asiakas') {
   doc.text(`Ostaja: ${buyerName}`, 20, 60)
   doc.text(`Päivämäärä: ${new Date().toLocaleString()}`, 20, 70)
 
-  // ALV-käsittely
-  const vatRate = product.vatRate || '24%'
-  const vatAmount = product.vatAmount || 'Lasketaan hinnasta'
+  // ALV-laskenta
+  const numericPrice = parseFloat(product.price.replace('€', '').replace(',', '.'))
+  const vatRate = product.vatRate ? parseFloat(product.vatRate.toString().replace('%', '')) : 24
+  const vatAmount = product.vatAmount
+    ? parseFloat(product.vatAmount)
+    : +(numericPrice - numericPrice / (1 + vatRate / 100)).toFixed(2)
 
-  doc.text(`ALV: ${vatRate} (${vatAmount} €)`, 20, 80)
+  doc.text(`ALV: ${vatRate}% (${vatAmount.toFixed(2)} €)`, 20, 80)
 
   doc.save(`kuitti-${product.id}.pdf`)
 }
