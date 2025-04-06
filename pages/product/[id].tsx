@@ -12,6 +12,8 @@ export default function ProductDetail() {
   const [bidMessage, setBidMessage] = useState('')
   const [hasPurchased, setHasPurchased] = useState(false)
   const [deliveryChoice, setDeliveryChoice] = useState('')
+  const [message, setMessage] = useState('')
+  const [sentMessages, setSentMessages] = useState<string[]>([])
 
   // Ladataan tuote
   useEffect(() => {
@@ -34,9 +36,17 @@ export default function ProductDetail() {
       setProduct(loadedProduct)
       setCurrentBid(loadedProduct.currentBid || 0)
     }
+
+    // Lataa aiemmat viestit
+    if (typeof window !== 'undefined') {
+      const msgData = localStorage.getItem(`messages-${id}`)
+      if (msgData) {
+        setSentMessages(JSON.parse(msgData))
+      }
+    }
   }, [id])
 
-  // Countdown kellonaika
+  // Countdown
   useEffect(() => {
     if (!product?.endsAt) return
 
@@ -59,7 +69,6 @@ export default function ProductDetail() {
     return () => clearInterval(interval)
   }, [product?.endsAt])
 
-  // Huuto
   const handleBid = () => {
     const newBid = currentBid + 5
     setCurrentBid(newBid)
@@ -68,14 +77,24 @@ export default function ProductDetail() {
     setHasPurchased(true)
   }
 
-  // Osta heti
   const handleBuyNow = () => {
     setHasPurchased(true)
   }
 
-  // Valittu toimitustapa
   const handleDeliveryChoice = (value: string) => {
     setDeliveryChoice(value)
+    if (value === 'delivery') {
+      setMessage('Hei! Ostin tuotteen ja valitsin toimituksen. Voitko vahvistaa aikataulun?')
+    } else {
+      setMessage('Hei! Ostin tuotteen ja valitsin noudon. Voimmeko sopia ajan ja paikan?')
+    }
+  }
+
+  const handleSendMessage = () => {
+    const newMessages = [...sentMessages, message]
+    setSentMessages(newMessages)
+    localStorage.setItem(`messages-${id}`, JSON.stringify(newMessages))
+    setMessage('')
   }
 
   if (!product) return <div className="p-6">Tuotetta ei löytynyt.</div>
@@ -116,7 +135,6 @@ export default function ProductDetail() {
           </div>
         )}
 
-        {/* Ostopainikkeet */}
         {!hasPurchased && (
           <div className="flex gap-4 mb-6">
             {product.buyNow && (
@@ -138,7 +156,7 @@ export default function ProductDetail() {
           </div>
         )}
 
-        {/* Toimitusvalinta oston jälkeen */}
+        {/* Toimitusvalinta */}
         {hasPurchased && (
           <div className="mb-6 border-t pt-4">
             <h3 className="font-semibold mb-2">Valitse toimitustapa:</h3>
@@ -168,15 +186,40 @@ export default function ProductDetail() {
                 Toimitus ({product.deliveryCost || 'kulut ilmoitetaan'} €)
               </label>
             )}
-            {deliveryChoice && (
-              <div className="mt-4 p-3 bg-green-100 rounded text-green-800">
-                ✅ Valitsit: {deliveryChoice === 'pickup' ? 'Nouto' : 'Toimitus'}
-              </div>
-            )}
           </div>
         )}
 
-        {/* Näytä nouto-/toimitusehdot aina */}
+        {/* Viesti myyjälle */}
+        {hasPurchased && deliveryChoice && (
+          <div className="mb-6 border-t pt-4">
+            <h3 className="font-semibold mb-2">Lähetä viesti myyjälle</h3>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="w-full border rounded p-2 mb-2"
+              rows={3}
+            />
+            <button
+              onClick={handleSendMessage}
+              className="bg-green-600 text-white px-4 py-2 rounded"
+            >
+              Lähetä viesti
+            </button>
+          </div>
+        )}
+
+        {/* Viestihistoria */}
+        {sentMessages.length > 0 && (
+          <div className="mb-6 border-t pt-4">
+            <h3 className="font-semibold mb-2">Viestihistoria</h3>
+            <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+              {sentMessages.map((msg, idx) => (
+                <li key={idx}>{msg}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {(product.pickupAvailable || product.deliveryAvailable) && (
           <div className="mt-6 border-t pt-4">
             <h3 className="font-semibold mb-2">Toimitus / Nouto</h3>
