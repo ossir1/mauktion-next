@@ -15,10 +15,9 @@ export const products = [
   },
   {
     id: 3,
-    name: "Rare Vinyl Record",
+    name: "Rare Vinyl Record (FIXED)",
     price: "85 €",
     buyNow: true,
     auction: true
   }
 ];
- 
