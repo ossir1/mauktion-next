@@ -8,6 +8,8 @@ export default function ProductDetail() {
 
   const product = products.find((p) => p.id === Number(id))
   const [timeLeft, setTimeLeft] = useState('')
+  const [currentBid, setCurrentBid] = useState(product?.currentBid || 0)
+  const [bidMessage, setBidMessage] = useState('')
 
   useEffect(() => {
     if (!product?.endsAt) return
@@ -31,6 +33,13 @@ export default function ProductDetail() {
     return () => clearInterval(interval)
   }, [product?.endsAt])
 
+  const handleBid = () => {
+    const newBid = currentBid + 5
+    setCurrentBid(newBid)
+    setBidMessage(`Tarjouksesi ${newBid} € on hyväksytty!`)
+    setTimeout(() => setBidMessage(''), 3000)
+  }
+
   if (!product) return <div className="p-6">Tuotetta ei löytynyt.</div>
 
   return (
@@ -49,14 +58,25 @@ export default function ProductDetail() {
         <p className="text-xl text-gray-800 mb-2">{product.price}</p>
 
         {product.auction && (
-          <p className="text-sm text-gray-600 mb-2">
-            ⏱ Time left: <span className="font-semibold">{timeLeft}</span>
-          </p>
+          <>
+            <p className="text-sm text-gray-600 mb-1">
+              ⏱ Time left: <span className="font-semibold">{timeLeft}</span>
+            </p>
+            <p className="text-sm text-gray-800 mb-4">
+              💰 Current bid: <span className="font-semibold">{currentBid} €</span>
+            </p>
+          </>
         )}
 
         <p className="text-gray-600 mb-4">
           Tämä on esittelyteksti tuotteelle {product.name}. Tänne voidaan lisätä tuotteen tarkempi kuvaus.
         </p>
+
+        {bidMessage && (
+          <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">
+            {bidMessage}
+          </div>
+        )}
 
         <div className="flex gap-4 mb-6">
           {product.buyNow && (
@@ -65,8 +85,11 @@ export default function ProductDetail() {
             </button>
           )}
           {product.auction && timeLeft !== 'Auction ended' && (
-            <button className="bg-yellow-500 text-white px-6 py-2 rounded">
-              Bid
+            <button
+              onClick={handleBid}
+              className="bg-yellow-500 text-white px-6 py-2 rounded"
+            >
+              Bid +5 €
             </button>
           )}
         </div>
