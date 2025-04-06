@@ -1,15 +1,10 @@
-// components/Layout.tsx
 import Header from './Header'
 
-type Props = {
-  children: React.ReactNode
-}
-
-export default function Layout({ children }: Props) {
+export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Header />
-      <main>{children}</main>
+      <div className="max-w-6xl mx-auto">{children}</div>
     </>
   )
 }
