@@ -1,23 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Login() {
-  const [username, setUsername] = useState('')
   const router = useRouter()
-
-  useEffect(() => {
-    const existingUser = localStorage.getItem('mauktion-user')
-    if (existingUser) {
-      router.push('/')
-    }
-  }, [])
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    if (username.trim()) {
-      localStorage.setItem('mauktion-user', username)
-      router.push('/')
+    const users = JSON.parse(localStorage.getItem('mauktion-users') || '{}')
+    if (!users[username] || users[username].password !== password) {
+      alert('Virheellinen käyttäjänimi tai salasana')
+      return
     }
+    localStorage.setItem('mauktion-username', username)
+    router.push('/')
   }
 
   return (
@@ -25,21 +22,14 @@ export default function Login() {
       <h1 className="text-2xl font-bold mb-4">Kirjaudu sisään</h1>
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block mb-1 font-medium">Käyttäjänimi</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full border p-2 rounded"
-            required
-          />
+          <label className="block font-medium">Käyttäjänimi</label>
+          <input value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full border p-2 rounded" />
         </div>
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded"
-        >
-          Kirjaudu
-        </button>
+        <div>
+          <label className="block font-medium">Salasana</label>
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full border p-2 rounded" />
+        </div>
+        <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded">Kirjaudu</button>
       </form>
     </main>
   )
