@@ -3,7 +3,7 @@ import { generateReceipt } from '../utils/receipt'
 
 export default function Purchases() {
   const [purchases, setPurchases] = useState<any[]>([])
-  const [submittedReviews, setSubmittedReviews] = useState<number[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
 
   useEffect(() => {
     const data = localStorage.getItem('mauktion-purchases')
@@ -13,9 +13,7 @@ export default function Purchases() {
 
     const reviewData = localStorage.getItem('mauktion-reviews')
     if (reviewData) {
-      const parsed = JSON.parse(reviewData)
-      const ids = parsed.map((r: any) => r.productId)
-      setSubmittedReviews(ids)
+      setReviews(JSON.parse(reviewData))
     }
   }, [])
 
@@ -31,12 +29,13 @@ export default function Purchases() {
       date: new Date().toISOString()
     }
 
-    const existing = localStorage.getItem('mauktion-reviews')
-    const all = existing ? JSON.parse(existing) : []
-    all.push(newReview)
+    const all = [...reviews, newReview]
     localStorage.setItem('mauktion-reviews', JSON.stringify(all))
-    setSubmittedReviews([...submittedReviews, id])
+    setReviews(all)
   }
+
+  const hasReviewed = (id: number) => reviews.some((r: any) => r.productId === id)
+  const getReview = (id: number) => reviews.find((r: any) => r.productId === id)
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
@@ -59,7 +58,7 @@ export default function Purchases() {
                 Lataa kuitti PDF:nä
               </button>
 
-              {!submittedReviews.includes(purchase.id) && (
+              {!hasReviewed(purchase.id) && (
                 <button
                   onClick={() => handleReview(purchase.id)}
                   className="text-sm text-green-600 underline"
@@ -68,6 +67,13 @@ export default function Purchases() {
                 </button>
               )}
             </div>
+
+            {hasReviewed(purchase.id) && (
+              <div className="mt-2 text-sm text-gray-700">
+                <p>⭐️ Arvosana: {getReview(purchase.id)?.rating}/5</p>
+                <p>💬 “{getReview(purchase.id)?.comment}”</p>
+              </div>
+            )}
           </li>
         ))}
       </ul>
