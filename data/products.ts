@@ -15,9 +15,16 @@ export const products = [
   },
   {
     id: 3,
-    name: "Rare Vinyl Record (FIXED)",
+    name: "RARE VINYL (FIXED)",
     price: "85 €",
     buyNow: true,
     auction: true
+  },
+  {
+    id: 4,
+    name: "Testituote ilman nappeja",
+    price: "0 €",
+    buyNow: false,
+    auction: false
   }
 ];
