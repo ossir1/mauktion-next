@@ -1,12 +1,31 @@
 import { useEffect, useState } from 'react'
+import { generateReceipt } from '../utils/receipt'
+
+type Purchase = {
+  id: number
+  name: string
+  price: string
+  vatRate?: string
+  vatAmount?: string
+  purchasedAt: string
+  buyer?: string
+  deliveryChoice?: string
+}
 
 export default function PurchasesPage() {
-  const [purchases, setPurchases] = useState<any[]>([])
+  const [purchases, setPurchases] = useState<Purchase[]>([])
 
   useEffect(() => {
-    const data = localStorage.getItem('mauktion-purchases')
-    if (data) {
-      setPurchases(JSON.parse(data))
+    if (typeof window !== 'undefined') {
+      const raw = localStorage.getItem('mauktion-purchases')
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw)
+          setPurchases(parsed)
+        } catch (err) {
+          console.error('Ostohistorian lataus epäonnistui:', err)
+        }
+      }
     }
   }, [])
 
@@ -29,6 +48,12 @@ export default function PurchasesPage() {
                 Ostettu: {new Date(item.purchasedAt).toLocaleString('fi-FI')}
               </p>
               <p className="text-sm text-gray-500">Ostaja: {item.buyer || 'Asiakas'}</p>
+              <button
+                onClick={() => generateReceipt(item, item.buyer || 'Asiakas')}
+                className="mt-3 text-sm text-blue-600 underline"
+              >
+                Lataa kuitti PDF
+              </button>
             </div>
           ))}
         </div>
