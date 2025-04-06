@@ -1,31 +1,38 @@
 import Head from 'next/head'
-import { useEffect, useState } from 'react'
 import ProductCard from '../components/ProductCard'
 import { products } from '../data/products'
-import Header from '../components/Header'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
   const [allProducts, setAllProducts] = useState(products)
 
   useEffect(() => {
-    const added = localStorage.getItem('mauktion-added-product')
+    const added = localStorage.getItem('mauktion-added-products')
     if (added) {
-      const newProduct = JSON.parse(added)
-      setAllProducts((prev) => [newProduct, ...prev])
-      localStorage.removeItem('mauktion-added-product')
+      const parsed = JSON.parse(added)
+      setAllProducts([...products, ...parsed])
+    } else {
+      setAllProducts(products)
     }
   }, [])
 
   return (
     <>
       <Head>
-        <title>Mauktion Demo</title>
+        <title>Mauktion</title>
       </Head>
+      <main className="p-6">
+        <div className="flex justify-between items-center mb-4">
+          <a href="/my-products" className="text-blue-600 underline">→ Omat tuotteet</a>
+          <h1 className="text-3xl font-bold">Tervetuloa Mauktioniin</h1>
+          <a
+            href="/add"
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition"
+          >
+            Lisää tuote
+          </a>
+        </div>
 
-      <Header />
-
-      <main className="p-6 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Tervetuloa Mauktioniin</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {allProducts.map((product) => (
             <ProductCard
