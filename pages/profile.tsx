@@ -1,10 +1,9 @@
-import Head from 'next/head'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Profile() {
   const router = useRouter()
-  const [username, setUsername] = useState('')
+  const [username, setUsername] = useState<string | null>(null)
 
   useEffect(() => {
     const user = localStorage.getItem('mauktion-user')
@@ -16,15 +15,17 @@ export default function Profile() {
   }, [])
 
   return (
-    <>
-      <Head>
-        <title>Profiili</title>
-      </Head>
-      <main className="p-6 max-w-xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Profiili</h1>
-        <p>Tervetuloa, <strong>{username}</strong>!</p>
-        <p className="mt-2 text-sm text-gray-600">Täällä voit tarkastella omaa ostohistoriaasi, myyntejä ja arvostelujasi.</p>
-      </main>
-    </>
+    <main className="p-6 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Profiili</h1>
+
+      {username ? (
+        <>
+          <p>Tervetuloa, <span className="font-semibold">{username}</span>!</p>
+          <p className="text-gray-600 mt-2 text-sm">Tulevaan profiilisivuun voidaan lisätä esim. ostohistoria, arvostelut, keskiarvot jne.</p>
+        </>
+      ) : (
+        <p>Kirjaudutaan sisään...</p>
+      )}
+    </main>
   )
 }
