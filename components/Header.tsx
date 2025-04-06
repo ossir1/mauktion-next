@@ -22,6 +22,7 @@ export default function Header() {
         </Link>
         <nav className="space-x-4">
           <Link href="/" className="text-gray-700 hover:text-blue-700">Etusivu</Link>
+
           {username && (
             <>
               <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
@@ -29,10 +30,15 @@ export default function Header() {
               <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
             </>
           )}
-          {!username ? (
-            <Link href="/login" className="text-gray-700 hover:text-blue-700">Kirjaudu sisään</Link>
+
+          {username ? (
+            <button onClick={handleLogout} className="text-red-600 hover:text-red-800">
+              Kirjaudu ulos ({username})
+            </button>
           ) : (
-            <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
+            <Link href="/login" className="text-blue-600 hover:underline">
+              Kirjaudu
+            </Link>
           )}
         </nav>
       </div>
