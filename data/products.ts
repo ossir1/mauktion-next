@@ -22,7 +22,11 @@ export const products = [
     buyNow: true,
     auction: true,
     endsAt: "2025-04-05T20:00:00Z",
-    currentBid: 56
+    currentBid: 56,
+    pickupAvailable: true,
+    pickupLocation: "Helsinki, Töölö",
+    deliveryAvailable: true,
+    deliveryCost: "6.90"
   },
   {
     id: 4,
