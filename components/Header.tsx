@@ -5,11 +5,8 @@ export default function Header() {
   const [username, setUsername] = useState<string | null>(null)
 
   useEffect(() => {
-    const user = localStorage.getItem('mauktion-user')
-    if (user) {
-      const parsed = JSON.parse(user)
-      setUsername(parsed.username)
-    }
+    const stored = localStorage.getItem('mauktion-user')
+    setUsername(stored)
   }, [])
 
   const handleLogout = () => {
@@ -30,11 +27,12 @@ export default function Header() {
               <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
               <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
               <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
-              <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
             </>
           )}
-          {!username && (
+          {!username ? (
             <Link href="/login" className="text-gray-700 hover:text-blue-700">Kirjaudu sisään</Link>
+          ) : (
+            <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
           )}
         </nav>
       </div>
