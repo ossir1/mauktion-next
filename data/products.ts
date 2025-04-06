@@ -21,3 +21,4 @@ export const products = [
     auction: true
   }
 ];
+ 
