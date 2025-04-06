@@ -45,11 +45,13 @@ export default function ProductDetail() {
     const soldAt = new Date().toISOString()
     const updatedProduct = { ...product, soldAt }
 
+    // Ostohistoria
     const existing = localStorage.getItem('mauktion-purchases')
     const history = existing ? JSON.parse(existing) : []
     history.push({ ...updatedProduct, buyer: 'Asiakas', purchasedAt: soldAt })
     localStorage.setItem('mauktion-purchases', JSON.stringify(history))
 
+    // Myyntimerkintä
     const all = localStorage.getItem('mauktion-added-products')
     if (all) {
       const parsed = JSON.parse(all)
