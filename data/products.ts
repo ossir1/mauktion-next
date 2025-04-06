@@ -15,16 +15,16 @@ export const products = [
   },
   {
     id: 3,
-    name: "RARE VINYL (FIXED)",
+    name: "RARE VINYL (FIXED ✅)",
     price: "85 €",
     buyNow: true,
     auction: true
   },
   {
     id: 4,
-    name: "Testituote ilman nappeja",
-    price: "0 €",
-    buyNow: false,
+    name: "🧪 TESTITUOTE - TÄMÄN PITÄISI NÄKYÄ",
+    price: "999 €",
+    buyNow: true,
     auction: false
   }
 ];
