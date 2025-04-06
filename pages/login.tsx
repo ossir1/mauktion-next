@@ -1,16 +1,15 @@
-import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 
-export default function LoginPage() {
+export default function Login() {
   const router = useRouter()
+  const [isRegistering, setIsRegistering] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isRegisterMode, setIsRegisterMode] = useState(false)
+  const [message, setMessage] = useState('')
 
   useEffect(() => {
-    const loggedUser = localStorage.getItem('mauktion-user')
-    if (loggedUser) {
+    if (localStorage.getItem('mauktion-user')) {
       router.push('/')
     }
   }, [])
@@ -18,79 +17,67 @@ export default function LoginPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const usersRaw = localStorage.getItem('mauktion-users')
-    const users = usersRaw ? JSON.parse(usersRaw) : []
+    const users = JSON.parse(localStorage.getItem('mauktion-users') || '{}')
 
-    if (isRegisterMode) {
-      // Rekisteröinti
-      const exists = users.find((u: any) => u.username === username)
-      if (exists) {
-        setError('Käyttäjätunnus on jo olemassa.')
-        return
+    if (isRegistering) {
+      if (users[username]) {
+        setMessage('Käyttäjänimi on jo varattu.')
+      } else {
+        users[username] = password
+        localStorage.setItem('mauktion-users', JSON.stringify(users))
+        localStorage.setItem('mauktion-user', username)
+        router.push('/')
       }
-      const newUser = { username, password }
-      const updated = [...users, newUser]
-      localStorage.setItem('mauktion-users', JSON.stringify(updated))
-      localStorage.setItem('mauktion-user', JSON.stringify(newUser))
-      router.push('/')
     } else {
-      // Kirjautuminen
-      const found = users.find((u: any) => u.username === username && u.password === password)
-      if (!found) {
-        setError('Väärä käyttäjätunnus tai salasana.')
-        return
+      if (!users[username]) {
+        setMessage('Käyttäjää ei löydy.')
+      } else if (users[username] !== password) {
+        setMessage('Väärä salasana.')
+      } else {
+        localStorage.setItem('mauktion-user', username)
+        router.push('/')
       }
-      localStorage.setItem('mauktion-user', JSON.stringify(found))
-      router.push('/')
     }
   }
 
   return (
     <main className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">{isRegisterMode ? 'Rekisteröidy' : 'Kirjaudu sisään'}</h1>
+      <h1 className="text-2xl font-bold mb-4">{isRegistering ? 'Rekisteröidy' : 'Kirjaudu sisään'}</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block font-medium">Käyttäjätunnus</label>
+          <label className="block mb-1 font-medium">Käyttäjänimi</label>
           <input
-            className="w-full border p-2 rounded"
+            type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            className="w-full border rounded p-2"
             required
           />
         </div>
         <div>
-          <label className="block font-medium">Salasana</label>
+          <label className="block mb-1 font-medium">Salasana</label>
           <input
             type="password"
-            className="w-full border p-2 rounded"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="w-full border rounded p-2"
             required
           />
         </div>
-        {error && <p className="text-red-600">{error}</p>}
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
-          {isRegisterMode ? 'Luo tunnus' : 'Kirjaudu'}
+        {message && <div className="text-red-600 text-sm">{message}</div>}
+        <button className="bg-blue-600 text-white px-6 py-2 rounded w-full" type="submit">
+          {isRegistering ? 'Luo tunnus' : 'Kirjaudu'}
         </button>
       </form>
-
-      <p className="mt-4 text-sm">
-        {isRegisterMode ? (
-          <>
-            Onko sinulla jo tunnus?{' '}
-            <button onClick={() => setIsRegisterMode(false)} className="text-blue-600 underline">
-              Kirjaudu sisään
-            </button>
-          </>
-        ) : (
-          <>
-            Ei tunnusta?{' '}
-            <button onClick={() => setIsRegisterMode(true)} className="text-blue-600 underline">
-              Rekisteröidy
-            </button>
-          </>
-        )}
-      </p>
+      <button
+        onClick={() => {
+          setIsRegistering(!isRegistering)
+          setMessage('')
+        }}
+        className="mt-4 text-sm text-blue-600 underline"
+      >
+        {isRegistering ? 'Onko sinulla jo tili? Kirjaudu' : 'Ei vielä tiliä? Rekisteröidy'}
+      </button>
     </main>
   )
 }
