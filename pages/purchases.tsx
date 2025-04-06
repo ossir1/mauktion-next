@@ -1,6 +1,4 @@
 import { useEffect, useState } from 'react'
-import Header from '../components/Header'
-import { generateReceipt } from '../utils/receipt'
 
 export default function PurchasesPage() {
   const [purchases, setPurchases] = useState<any[]>([])
@@ -13,31 +11,28 @@ export default function PurchasesPage() {
   }, [])
 
   return (
-    <>
-      <Header />
-      <main className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Ostohistoria</h1>
+    <main className="p-6 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Ostohistoria</h1>
 
-        {purchases.length === 0 ? (
-          <p>Ei vielä ostoksia.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {purchases.map((product) => (
-              <div key={product.id} className="border rounded-xl p-4 shadow">
-                <h2 className="text-lg font-semibold mb-1">{product.name}</h2>
-                <p className="text-gray-700 mb-1">Hinta: {product.price}</p>
-                <p className="text-sm text-gray-500">ID: {product.id}</p>
-                <button
-                  onClick={() => generateReceipt(product)}
-                  className="text-sm text-blue-600 underline mt-2"
-                >
-                  Lataa kuitti (PDF)
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
-    </>
+      {purchases.length === 0 ? (
+        <p className="text-gray-600">Ei vielä ostoksia.</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {purchases.map((item) => (
+            <div key={item.id} className="border rounded-xl p-4 shadow hover:shadow-md transition">
+              <h2 className="text-xl font-semibold mb-1">{item.name}</h2>
+              <p className="text-gray-800 font-medium mb-1">Hinta: {item.price}</p>
+              <p className="text-sm text-gray-600">
+                ALV: {item.vatRate || '24%'} ({item.vatAmount || '0'} €)
+              </p>
+              <p className="text-sm text-gray-600 mt-2">
+                Ostettu: {new Date(item.purchasedAt).toLocaleString('fi-FI')}
+              </p>
+              <p className="text-sm text-gray-500">Ostaja: {item.buyer || 'Asiakas'}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </main>
   )
 }
