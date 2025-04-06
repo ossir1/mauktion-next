@@ -22,6 +22,10 @@ export default function Home() {
       </Head>
       <main className="p-6">
         <div className="flex justify-between items-center mb-4">
+<a href="/my-products" className="text-blue-600 underline mb-4 block">
+  → Siirry omiin tuotteisiin
+</a>
+
           <h1 className="text-3xl font-bold">Welcome to Mauktion</h1>
           <a
             href="/add"
