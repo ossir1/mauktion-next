@@ -1,15 +1,20 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
 export default function Header() {
-  const [userName, setUserName] = useState('')
+  const [username, setUsername] = useState('')
+  const router = useRouter()
 
   useEffect(() => {
-    const savedName = localStorage.getItem('mauktion-username')
-    if (savedName) {
-      setUserName(savedName)
-    }
+    const name = localStorage.getItem('mauktion-username')
+    if (name) setUsername(name)
   }, [])
+
+  const handleLogout = () => {
+    localStorage.removeItem('mauktion-username')
+    router.push('/login')
+  }
 
   return (
     <header className="bg-white shadow p-4 mb-6">
@@ -22,12 +27,16 @@ export default function Header() {
           <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
           <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
           <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
-          <Link href="/purchases" className="text-gray-700 hover:text-blue-700">Ostot</Link>
-          <Link href="/sales" className="text-gray-700 hover:text-blue-700">Myynnit</Link>
 
-
-          {userName && (
-            <span className="text-sm text-gray-500 ml-4">Tervetuloa, <strong>{userName}</strong></span>
+          {username ? (
+            <>
+              <span className="text-sm text-gray-600">Tervetuloa, {username}!</span>
+              <button onClick={handleLogout} className="text-red-600 underline text-sm ml-2">
+                Kirjaudu ulos
+              </button>
+            </>
+          ) : (
+            <Link href="/login" className="text-blue-600 underline text-sm">Kirjaudu sisään</Link>
           )}
         </nav>
       </div>
