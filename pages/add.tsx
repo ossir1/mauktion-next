@@ -12,8 +12,6 @@ type NewProduct = {
   pickupLocation?: string
   deliveryAvailable?: boolean
   deliveryCost?: string
-  vatRate: string
-  vatAmount: string
 }
 
 export default function AddProduct() {
@@ -28,30 +26,13 @@ export default function AddProduct() {
     pickupAvailable: false,
     pickupLocation: '',
     deliveryAvailable: false,
-    deliveryCost: '',
-    vatRate: '24%',
-    vatAmount: '0'
+    deliveryCost: ''
   })
 
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target
     const val = type === 'checkbox' ? checked : value
-    setForm((prev) => ({
-      ...prev,
-      [name]: val,
-      ...(name === 'vatRate' || name === 'price'
-        ? calculateVAT(name === 'vatRate' ? val : form.vatRate, name === 'price' ? val : form.price)
-        : {})
-    }))
-  }
-
-  const calculateVAT = (rate: string, price: string) => {
-    const numericPrice = parseFloat(price)
-    const numericRate = parseFloat(rate)
-    if (isNaN(numericPrice) || isNaN(numericRate)) return { vatAmount: '0' }
-
-    const vat = numericPrice - numericPrice / (1 + numericRate / 100)
-    return { vatAmount: vat.toFixed(2) }
+    setForm((prev) => ({ ...prev, [name]: val }))
   }
 
   const handleSubmit = (e: any) => {
@@ -67,6 +48,7 @@ export default function AddProduct() {
     <main className="p-6 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Lisää uusi tuote</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
+
         <div>
           <label className="block font-medium">Nimi</label>
           <input name="name" value={form.name} onChange={handleChange} className="w-full border p-2 rounded" required />
@@ -74,29 +56,7 @@ export default function AddProduct() {
 
         <div>
           <label className="block font-medium">Hinta (€)</label>
-          <input
-            name="price"
-            value={form.price}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block font-medium">ALV (%)</label>
-          <select
-            name="vatRate"
-            value={form.vatRate}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          >
-            <option value="0%">0 % (veroton)</option>
-            <option value="10%">10 %</option>
-            <option value="14%">14 %</option>
-            <option value="24%">24 % (yleinen)</option>
-          </select>
-          <p className="text-sm text-gray-600 mt-1">ALV-osuus: {form.vatAmount} €</p>
+          <input name="price" value={form.price} onChange={handleChange} className="w-full border p-2 rounded" required />
         </div>
 
         <div className="flex gap-4 items-center">
