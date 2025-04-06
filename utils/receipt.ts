@@ -1,19 +1,22 @@
 import jsPDF from 'jspdf'
 
-export function generateReceipt(product: any, buyerName: string = 'Asiakas', role: 'buyer' | 'seller' = 'buyer') {
+export function generateReceipt(product: any, buyerName: string = 'Asiakas') {
   const doc = new jsPDF()
-  const date = new Date().toLocaleString()
-  const isSeller = role === 'seller'
 
-  doc.setFontSize(16)
-  doc.text(isSeller ? 'Myyntikuitti' : 'Ostokuitti', 20, 20)
+  doc.setFontSize(18)
+  doc.text('Mauktion - Kuitti', 20, 20)
 
   doc.setFontSize(12)
   doc.text(`Tuote: ${product.name}`, 20, 40)
   doc.text(`Hinta: ${product.price}`, 20, 50)
-  doc.text(`ALV (${product.vatRate || '24%'}): ${product.vatAmount || '0'} €`, 20, 60)
-  doc.text(isSeller ? `Ostaja: ${buyerName}` : `Ostettu: ${date}`, 20, 70)
-  doc.text(isSeller ? `Myyty: ${date}` : `Ostaja: ${buyerName}`, 20, 80)
+  doc.text(`Ostaja: ${buyerName}`, 20, 60)
+  doc.text(`Päivämäärä: ${new Date().toLocaleString()}`, 20, 70)
 
-  doc.save(`${isSeller ? 'myyntikuitti' : 'kuitti'}-${product.name}.pdf`)
+  // ALV-käsittely
+  const vatRate = product.vatRate || '24%'
+  const vatAmount = product.vatAmount || 'Lasketaan hinnasta'
+
+  doc.text(`ALV: ${vatRate} (${vatAmount} €)`, 20, 80)
+
+  doc.save(`kuitti-${product.id}.pdf`)
 }
