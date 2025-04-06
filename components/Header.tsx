@@ -5,23 +5,13 @@ export default function Header() {
   const [username, setUsername] = useState<string | null>(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem('mauktion-username')
-    if (stored) {
-      setUsername(stored)
-    }
+    const stored = localStorage.getItem('mauktion-user')
+    if (stored) setUsername(stored)
   }, [])
 
   const handleLogout = () => {
-    localStorage.removeItem('mauktion-username')
-    setUsername(null)
+    localStorage.removeItem('mauktion-user')
     window.location.href = '/'
-  }
-
-  const handleAddProductClick = (e: React.MouseEvent) => {
-    if (!username) {
-      e.preventDefault()
-      window.location.href = '/login'
-    }
   }
 
   return (
@@ -30,30 +20,21 @@ export default function Header() {
         <Link href="/" className="text-2xl font-bold text-blue-700">
           Mauktion
         </Link>
+
         <nav className="space-x-4">
-          <Link href="/" className="text-gray-700 hover:text-blue-700">
-            Etusivu
-          </Link>
-          <Link href="/add" className="text-gray-700 hover:text-blue-700" onClick={handleAddProductClick}>
-            Lisää tuote
-          </Link>
-          {username && (
-            <>
-              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">
-                Omat tuotteet
-              </Link>
-              <Link href="/profile" className="text-gray-700 hover:text-blue-700">
-                Profiili
-              </Link>
-            </>
-          )}
+          <Link href="/" className="text-gray-700 hover:text-blue-700">Etusivu</Link>
+
           {username ? (
-            <button onClick={handleLogout} className="text-red-600 hover:underline">
-              Kirjaudu ulos ({username})
-            </button>
+            <>
+              <span className="text-gray-700">Tervetuloa, {username}</span>
+              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
+              <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
+              <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
+              <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
+            </>
           ) : (
-            <Link href="/login" className="text-gray-700 hover:text-blue-700">
-              Kirjaudu sisään
+            <Link href="/auth" className="text-gray-700 hover:text-blue-700">
+              Kirjaudu / Rekisteröidy
             </Link>
           )}
         </nav>
