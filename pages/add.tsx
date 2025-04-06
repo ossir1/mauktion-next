@@ -16,6 +16,7 @@ type NewProduct = {
 
 export default function AddProduct() {
   const router = useRouter()
+
   const [form, setForm] = useState<NewProduct>({
     id: Date.now(),
     name: '',
@@ -37,7 +38,21 @@ export default function AddProduct() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault()
-    localStorage.setItem('mauktion-added-product', JSON.stringify(form))
+
+    // Luo uusi tuote ID:llä
+    const newProduct = { ...form, id: Date.now() }
+
+    // Hae olemassa olevat tuotteet localStoragesta
+    const existing = localStorage.getItem('mauktion-added-products')
+    const products = existing ? JSON.parse(existing) : []
+
+    // Lisää uusi tuote listaan
+    products.push(newProduct)
+
+    // Tallenna päivitetty lista localStorageen
+    localStorage.setItem('mauktion-added-products', JSON.stringify(products))
+
+    // Siirrytään takaisin etusivulle
     router.push('/')
   }
 
@@ -48,21 +63,43 @@ export default function AddProduct() {
 
         <div>
           <label className="block font-medium">Nimi</label>
-          <input name="name" value={form.name} onChange={handleChange} className="w-full border p-2 rounded" required />
+          <input
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
         </div>
 
         <div>
           <label className="block font-medium">Hinta (€)</label>
-          <input name="price" value={form.price} onChange={handleChange} className="w-full border p-2 rounded" required />
+          <input
+            name="price"
+            value={form.price}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+            required
+          />
         </div>
 
         <div className="flex gap-4 items-center">
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="buyNow" checked={form.buyNow} onChange={handleChange} />
+            <input
+              type="checkbox"
+              name="buyNow"
+              checked={form.buyNow}
+              onChange={handleChange}
+            />
             Buy Now
           </label>
           <label className="flex items-center gap-2">
-            <input type="checkbox" name="auction" checked={form.auction} onChange={handleChange} />
+            <input
+              type="checkbox"
+              name="auction"
+              checked={form.auction}
+              onChange={handleChange}
+            />
             Auction
           </label>
         </div>
@@ -84,7 +121,12 @@ export default function AddProduct() {
           <h2 className="font-semibold mb-2">Toimitus / Nouto</h2>
 
           <label className="flex items-center gap-2 mb-2">
-            <input type="checkbox" name="pickupAvailable" checked={form.pickupAvailable} onChange={handleChange} />
+            <input
+              type="checkbox"
+              name="pickupAvailable"
+              checked={form.pickupAvailable}
+              onChange={handleChange}
+            />
             Nouto mahdollinen
           </label>
 
@@ -101,7 +143,12 @@ export default function AddProduct() {
           )}
 
           <label className="flex items-center gap-2 mb-2">
-            <input type="checkbox" name="deliveryAvailable" checked={form.deliveryAvailable} onChange={handleChange} />
+            <input
+              type="checkbox"
+              name="deliveryAvailable"
+              checked={form.deliveryAvailable}
+              onChange={handleChange}
+            />
             Toimitus mahdollinen
           </label>
 
@@ -118,7 +165,10 @@ export default function AddProduct() {
           )}
         </div>
 
-        <button className="bg-green-600 text-white px-6 py-2 rounded" type="submit">
+        <button
+          className="bg-green-600 text-white px-6 py-2 rounded"
+          type="submit"
+        >
           Lisää tuote
         </button>
       </form>
