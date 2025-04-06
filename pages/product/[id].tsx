@@ -6,7 +6,10 @@ export default function ProductDetail() {
   const router = useRouter()
   const { id } = router.query
 
-  const product = products.find((p) => p.id === Number(id))
+  const product = products.find((p) => p.id === Number(id)) || JSON.parse(
+    localStorage.getItem('mauktion-added-product') || 'null'
+  )
+
   const [timeLeft, setTimeLeft] = useState('')
   const [currentBid, setCurrentBid] = useState(product?.currentBid || 0)
   const [bidMessage, setBidMessage] = useState('')
@@ -94,7 +97,21 @@ export default function ProductDetail() {
           )}
         </div>
 
-        <a href="/" className="text-blue-600 underline">
+        {(product.pickupAvailable || product.deliveryAvailable) && (
+          <div className="mt-6 border-t pt-4">
+            <h3 className="font-semibold mb-2">Toimitus / Nouto</h3>
+
+            {product.pickupAvailable && (
+              <p className="mb-1">📍 Nouto: {product.pickupLocation || 'Paikka ilmoitetaan myöhemmin'}</p>
+            )}
+
+            {product.deliveryAvailable && (
+              <p className="mb-1">📦 Toimitus: {product.deliveryCost || 'Toimituskulu ilmoitetaan'} €</p>
+            )}
+          </div>
+        )}
+
+        <a href="/" className="text-blue-600 underline block mt-6">
           ← Takaisin etusivulle
         </a>
       </div>
