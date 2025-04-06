@@ -1,11 +1,35 @@
 import { useRouter } from 'next/router'
 import { products } from '../../data/products'
+import { useEffect, useState } from 'react'
 
 export default function ProductDetail() {
   const router = useRouter()
   const { id } = router.query
 
   const product = products.find((p) => p.id === Number(id))
+  const [timeLeft, setTimeLeft] = useState('')
+
+  useEffect(() => {
+    if (!product?.endsAt) return
+
+    const interval = setInterval(() => {
+      const end = new Date(product.endsAt).getTime()
+      const now = new Date().getTime()
+      const diff = end - now
+
+      if (diff <= 0) {
+        setTimeLeft('Auction ended')
+        clearInterval(interval)
+      } else {
+        const hours = Math.floor(diff / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
+        setTimeLeft(`${hours}h ${minutes}min ${seconds}s`)
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [product?.endsAt])
 
   if (!product) return <div className="p-6">Tuotetta ei löytynyt.</div>
 
@@ -14,7 +38,6 @@ export default function ProductDetail() {
       <div className="max-w-xl mx-auto">
         <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
 
-        {/* Placeholder-kuva */}
         <div className="mb-4">
           <img
             src={`https://via.placeholder.com/600x400?text=${encodeURIComponent(product.name)}`}
@@ -25,9 +48,14 @@ export default function ProductDetail() {
 
         <p className="text-xl text-gray-800 mb-2">{product.price}</p>
 
-        {/* Placeholder-kuvaus */}
+        {product.auction && (
+          <p className="text-sm text-gray-600 mb-2">
+            ⏱ Time left: <span className="font-semibold">{timeLeft}</span>
+          </p>
+        )}
+
         <p className="text-gray-600 mb-4">
-          Tämä on esittelyteksti tuotteelle {product.name}. Tänne voidaan lisätä tuotteen tarkempi kuvaus, kun käytössä on tietokanta tai käyttäjän syöttämä data.
+          Tämä on esittelyteksti tuotteelle {product.name}. Tänne voidaan lisätä tuotteen tarkempi kuvaus.
         </p>
 
         <div className="flex gap-4 mb-6">
@@ -36,7 +64,7 @@ export default function ProductDetail() {
               Buy Now
             </button>
           )}
-          {product.auction && (
+          {product.auction && timeLeft !== 'Auction ended' && (
             <button className="bg-yellow-500 text-white px-6 py-2 rounded">
               Bid
             </button>
