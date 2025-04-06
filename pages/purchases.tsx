@@ -18,9 +18,15 @@ export default function Purchases() {
   }, [])
 
   const handleReview = (id: number) => {
+    if (hasReviewed(id)) {
+      alert('Olet jo arvostellut tämän tuotteen.')
+      return
+    }
+
     const rating = prompt('Anna arvosana (1-5):')
-    const comment = prompt('Kirjoita arvostelu:')
     if (!rating) return
+
+    const comment = prompt('Kirjoita arvostelu (vapaaehtoinen):') || ''
 
     const newReview = {
       productId: id,
