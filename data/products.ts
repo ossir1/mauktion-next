@@ -12,7 +12,8 @@ export const products = [
     price: "50 €",
     buyNow: false,
     auction: true,
-    endsAt: "2025-04-06T18:00:00Z"
+    endsAt: "2025-04-06T18:00:00Z",
+    currentBid: 32
   },
   {
     id: 3,
@@ -20,7 +21,8 @@ export const products = [
     price: "85 €",
     buyNow: true,
     auction: true,
-    endsAt: "2025-04-05T20:00:00Z"
+    endsAt: "2025-04-05T20:00:00Z",
+    currentBid: 56
   },
   {
     id: 4,
