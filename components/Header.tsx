@@ -11,6 +11,8 @@ export default function Header() {
           <Link href="/" className="text-gray-700 hover:text-blue-700">Etusivu</Link>
           <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
           <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
+          <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
+
         </nav>
       </div>
     </header>
