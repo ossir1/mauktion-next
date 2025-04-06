@@ -11,20 +11,22 @@ export const products = [
     name: "Retro Chair",
     price: "50 €",
     buyNow: false,
-    auction: true
+    auction: true,
+    endsAt: "2025-04-06T18:00:00Z"
   },
   {
     id: 3,
-    name: "RARE VINYL (FIXED ✅)",
+    name: "Rare Vinyl Record",
     price: "85 €",
     buyNow: true,
-    auction: true
+    auction: true,
+    endsAt: "2025-04-05T20:00:00Z"
   },
   {
     id: 4,
-    name: "🧪 TESTITUOTE - TÄMÄN PITÄISI NÄKYÄ",
-    price: "999 €",
-    buyNow: true,
+    name: "Testituote ilman nappeja",
+    price: "0 €",
+    buyNow: false,
     auction: false
   }
-];
+]
