@@ -1,5 +1,5 @@
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
 type NewProduct = {
   id: number
@@ -18,6 +18,7 @@ type NewProduct = {
 
 export default function AddProduct() {
   const router = useRouter()
+  const [username, setUsername] = useState<string | null>(null)
 
   const [form, setForm] = useState<NewProduct>({
     id: Date.now(),
@@ -31,14 +32,15 @@ export default function AddProduct() {
     deliveryAvailable: false,
     deliveryCost: '',
     vatRate: '24',
-    vatAmount: '0'
+    vatAmount: ''
   })
 
-  // 🔐 Tarkistetaan onko käyttäjä kirjautunut
   useEffect(() => {
     const user = localStorage.getItem('mauktion-user')
     if (!user) {
       router.push('/login')
+    } else {
+      setUsername(user)
     }
   }, [])
 
@@ -50,23 +52,22 @@ export default function AddProduct() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault()
+    const vat = parseFloat(form.vatRate || '0')
+    const price = parseFloat(form.price || '0')
+    const vatAmount = ((price * vat) / 100).toFixed(2)
 
-    const vatRate = parseFloat(form.vatRate || '24')
-    const priceNumber = parseFloat(form.price || '0')
-    const priceExVat = priceNumber / (1 + vatRate / 100)
-    const vatAmount = priceNumber - priceExVat
-
-    const finalProduct = {
+    const newProduct = {
       ...form,
-      vatRate: vatRate.toString(),
-      vatAmount: vatAmount.toFixed(2)
+      id: Date.now(),
+      vatAmount,
+      vatRate: form.vatRate,
+      seller: username
     }
 
     const existing = localStorage.getItem('mauktion-added-products')
-    const all = existing ? JSON.parse(existing) : []
-    all.push(finalProduct)
-    localStorage.setItem('mauktion-added-products', JSON.stringify(all))
-
+    const products = existing ? JSON.parse(existing) : []
+    products.push(newProduct)
+    localStorage.setItem('mauktion-added-products', JSON.stringify(products))
     router.push('/')
   }
 
@@ -108,6 +109,16 @@ export default function AddProduct() {
           </div>
         )}
 
+        <div>
+          <label className="block font-medium">ALV-prosentti (%)</label>
+          <input
+            name="vatRate"
+            value={form.vatRate}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+          />
+        </div>
+
         <div className="pt-4 border-t">
           <h2 className="font-semibold mb-2">Toimitus / Nouto</h2>
 
@@ -144,16 +155,6 @@ export default function AddProduct() {
               />
             </div>
           )}
-        </div>
-
-        <div className="pt-4 border-t">
-          <label className="block font-medium">ALV-%</label>
-          <input
-            name="vatRate"
-            value={form.vatRate}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
         </div>
 
         <button className="bg-green-600 text-white px-6 py-2 rounded" type="submit">
