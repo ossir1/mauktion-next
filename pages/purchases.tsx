@@ -1,27 +1,9 @@
 import { useEffect, useState } from 'react'
-
-type Product = {
-  id: number
-  name: string
-  price: string
-  buyer: string
-  purchasedAt: string
-}
-
-type Review = {
-  productId: number
-  reviewer: string
-  rating: number
-  comment: string
-  date: string
-}
+import { generateReceipt } from '../utils/receipt'
 
 export default function Purchases() {
-  const [purchases, setPurchases] = useState<Product[]>([])
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [activeReview, setActiveReview] = useState<number | null>(null)
-  const [rating, setRating] = useState(0)
-  const [comment, setComment] = useState('')
+  const [purchases, setPurchases] = useState<any[]>([])
+  const [submittedReviews, setSubmittedReviews] = useState<number[]>([])
 
   useEffect(() => {
     const data = localStorage.getItem('mauktion-purchases')
@@ -31,89 +13,64 @@ export default function Purchases() {
 
     const reviewData = localStorage.getItem('mauktion-reviews')
     if (reviewData) {
-      setReviews(JSON.parse(reviewData))
+      const parsed = JSON.parse(reviewData)
+      const ids = parsed.map((r: any) => r.productId)
+      setSubmittedReviews(ids)
     }
   }, [])
 
-  const hasReviewed = (productId: number) => {
-    return reviews.some(r => r.productId === productId && r.reviewer === 'Ostaja')
-  }
+  const handleReview = (id: number) => {
+    const rating = prompt('Anna arvosana (1-5):')
+    const comment = prompt('Kirjoita arvostelu:')
+    if (!rating) return
 
-  const handleReviewSubmit = (productId: number) => {
-    const newReview: Review = {
-      productId,
-      reviewer: 'Ostaja',
+    const newReview = {
+      productId: id,
       rating,
       comment,
       date: new Date().toISOString()
     }
 
-    const updatedReviews = [...reviews, newReview]
-    setReviews(updatedReviews)
-    localStorage.setItem('mauktion-reviews', JSON.stringify(updatedReviews))
-
-    setActiveReview(null)
-    setRating(0)
-    setComment('')
+    const existing = localStorage.getItem('mauktion-reviews')
+    const all = existing ? JSON.parse(existing) : []
+    all.push(newReview)
+    localStorage.setItem('mauktion-reviews', JSON.stringify(all))
+    setSubmittedReviews([...submittedReviews, id])
   }
 
   return (
     <main className="p-6 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Ostohistoria</h1>
+      <h1 className="text-2xl font-bold mb-4">Ostohistoriasi</h1>
+      {purchases.length === 0 && <p>Ei ostoksia vielä.</p>}
+      <ul className="space-y-4">
+        {purchases.map((purchase) => (
+          <li key={purchase.id} className="border rounded p-4">
+            <p className="font-semibold">{purchase.name}</p>
+            <p>Hinta: {purchase.price}</p>
+            <p>Ostettu: {new Date(purchase.purchasedAt).toLocaleString()}</p>
+            <p>ALV: {purchase.vatRate || '24%'} ({purchase.vatAmount || '0'} €)</p>
+            <p>Toimitustapa: {purchase.deliveryAvailable ? 'Toimitus' : 'Nouto'}</p>
 
-      {purchases.length === 0 ? (
-        <p>Ei ostoksia vielä.</p>
-      ) : (
-        <ul className="space-y-6">
-          {purchases.map((purchase) => (
-            <li key={purchase.id} className="border rounded p-4 shadow">
-              <h2 className="text-xl font-semibold">{purchase.name}</h2>
-              <p>Hinta: {purchase.price}</p>
-              <p>Ostettu: {new Date(purchase.purchasedAt).toLocaleString()}</p>
+            <div className="flex flex-wrap gap-4 mt-2">
+              <button
+                onClick={() => generateReceipt(purchase, 'Asiakas')}
+                className="text-sm text-blue-600 underline"
+              >
+                Lataa kuitti PDF:nä
+              </button>
 
-              {hasReviewed(purchase.id) ? (
-                <p className="text-green-700 mt-2">✔️ Arvostelu annettu</p>
-              ) : activeReview === purchase.id ? (
-                <div className="mt-4 space-y-2">
-                  <label className="block font-medium">Arvostelu:</label>
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="w-full border rounded p-2"
-                    rows={3}
-                  />
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => setRating(star)}
-                        className={`px-3 py-1 border rounded ${
-                          rating === star ? 'bg-yellow-300' : ''
-                        }`}
-                      >
-                        {star} ⭐
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => handleReviewSubmit(purchase.id)}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                  >
-                    Lähetä arvostelu
-                  </button>
-                </div>
-              ) : (
+              {!submittedReviews.includes(purchase.id) && (
                 <button
-                  onClick={() => setActiveReview(purchase.id)}
-                  className="mt-4 text-sm text-blue-600 underline"
+                  onClick={() => handleReview(purchase.id)}
+                  className="text-sm text-green-600 underline"
                 >
-                  → Arvostele tuote
+                  Arvostele tuote
                 </button>
               )}
-            </li>
-          ))}
-        </ul>
-      )}
+            </div>
+          </li>
+        ))}
+      </ul>
     </main>
   )
 }
