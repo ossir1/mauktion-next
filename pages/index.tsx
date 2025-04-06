@@ -1,4 +1,5 @@
 import Head from 'next/head'
+import Header from '../components/Header'
 import ProductCard from '../components/ProductCard'
 import { products } from '../data/products'
 import { useEffect, useState } from 'react'
@@ -9,10 +10,8 @@ export default function Home() {
   useEffect(() => {
     const added = localStorage.getItem('mauktion-added-products')
     if (added) {
-      const parsed = JSON.parse(added)
-      setAllProducts([...products, ...parsed])
-    } else {
-      setAllProducts(products)
+      const newProducts = JSON.parse(added)
+      setAllProducts([...products, ...newProducts])
     }
   }, [])
 
@@ -21,9 +20,9 @@ export default function Home() {
       <Head>
         <title>Mauktion</title>
       </Head>
+      <Header />
       <main className="p-6">
         <div className="flex justify-between items-center mb-4">
-          <a href="/my-products" className="text-blue-600 underline">→ Omat tuotteet</a>
           <h1 className="text-3xl font-bold">Tervetuloa Mauktioniin</h1>
           <a
             href="/add"
@@ -32,7 +31,6 @@ export default function Home() {
             Lisää tuote
           </a>
         </div>
-
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {allProducts.map((product) => (
             <ProductCard
