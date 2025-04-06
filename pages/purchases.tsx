@@ -23,8 +23,14 @@ export default function Purchases() {
       return
     }
 
-    const rating = prompt('Anna arvosana (1-5):')
-    if (!rating) return
+    const input = prompt('Anna arvosana (1–5):')
+    if (!input) return
+
+    const rating = parseInt(input)
+    if (isNaN(rating) || rating < 1 || rating > 5) {
+      alert('Arvosanan täytyy olla numero välillä 1–5.')
+      return
+    }
 
     const comment = prompt('Kirjoita arvostelu (vapaaehtoinen):') || ''
 
