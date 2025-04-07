@@ -1,83 +1,56 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Login() {
   const router = useRouter()
-  const [isRegistering, setIsRegistering] = useState(false)
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [message, setMessage] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
 
-  useEffect(() => {
-    if (localStorage.getItem('mauktion-user')) {
-      router.push('/')
-    }
-  }, [])
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const users = JSON.parse(localStorage.getItem('mauktion-users') || '{}')
-
-    if (isRegistering) {
-      if (users[username]) {
-        setMessage('Käyttäjänimi on jo varattu.')
-      } else {
-        users[username] = password
-        localStorage.setItem('mauktion-users', JSON.stringify(users))
-        localStorage.setItem('mauktion-user', username)
-        router.push('/')
-      }
-    } else {
-      if (!users[username]) {
-        setMessage('Käyttäjää ei löydy.')
-      } else if (users[username] !== password) {
-        setMessage('Väärä salasana.')
-      } else {
-        localStorage.setItem('mauktion-user', username)
-        router.push('/')
-      }
+    const user = {
+      name,
+      email
     }
+
+    localStorage.setItem('mauktion-user', JSON.stringify(user))
+    router.push('/')
   }
 
   return (
     <main className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">{isRegistering ? 'Rekisteröidy' : 'Kirjaudu sisään'}</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <h1 className="text-2xl font-bold mb-4">Kirjaudu / Rekisteröidy</h1>
+      <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block mb-1 font-medium">Käyttäjänimi</label>
+          <label className="block font-medium mb-1">Nimi</label>
           <input
             type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full border rounded p-2"
             required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border p-2 rounded"
           />
         </div>
+
         <div>
-          <label className="block mb-1 font-medium">Salasana</label>
+          <label className="block font-medium mb-1">Sähköposti</label>
           <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border rounded p-2"
+            type="email"
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full border p-2 rounded"
           />
         </div>
-        {message && <div className="text-red-600 text-sm">{message}</div>}
-        <button className="bg-blue-600 text-white px-6 py-2 rounded w-full" type="submit">
-          {isRegistering ? 'Luo tunnus' : 'Kirjaudu'}
+
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
+          Kirjaudu sisään
         </button>
       </form>
-      <button
-        onClick={() => {
-          setIsRegistering(!isRegistering)
-          setMessage('')
-        }}
-        className="mt-4 text-sm text-blue-600 underline"
-      >
-        {isRegistering ? 'Onko sinulla jo tili? Kirjaudu' : 'Ei vielä tiliä? Rekisteröidy'}
-      </button>
     </main>
   )
 }
