@@ -1,40 +1,52 @@
 import { useEffect, useState } from 'react'
 import { generateReceipt } from '../utils/receipt'
-import { Review } from '../types'
+import { Review, Product } from '../types'
 
 export default function Profile() {
   const [user, setUser] = useState<any>(null)
-  const [purchases, setPurchases] = useState<any[]>([])
-  const [sales, setSales] = useState<any[]>([])
+  const [form, setForm] = useState<any>({
+    name: '',
+    email: '',
+    accountType: 'individual',
+    businessId: '',
+    companyLogo: ''
+  })
+  const [sales, setSales] = useState<Product[]>([])
+  const [purchases, setPurchases] = useState<Product[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
 
-  const [form, setForm] = useState({ name: '', email: '', password: '' })
-
   useEffect(() => {
-    const u = localStorage.getItem('mauktion-user')
-    if (u) {
-      const parsed = JSON.parse(u)
+    const storedUser = localStorage.getItem('mauktion-user')
+    const storedSales = localStorage.getItem('mauktion-sales')
+    const storedPurchases = localStorage.getItem('mauktion-purchases')
+    const storedReviews = localStorage.getItem('mauktion-reviews')
+
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser)
       setUser(parsed)
       setForm(parsed)
     }
 
-    const pur = localStorage.getItem('mauktion-purchases')
-    const sal = localStorage.getItem('mauktion-added-products')
-    const rev = localStorage.getItem('mauktion-reviews')
-
-    if (pur) setPurchases(JSON.parse(pur))
-    if (sal) setSales(JSON.parse(sal).filter((p: any) => p.soldAt))
-    if (rev) setReviews(JSON.parse(rev))
+    if (storedSales) setSales(JSON.parse(storedSales))
+    if (storedPurchases) setPurchases(JSON.parse(storedPurchases))
+    if (storedReviews) setReviews(JSON.parse(storedReviews))
   }, [])
 
-  const handleFormChange = (e: any) => {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (e: any) => {
+    const { name, value, type, checked } = e.target
+    const val = type === 'checkbox' ? checked : value
+    setForm((prev: any) => ({ ...prev, [name]: val }))
   }
 
-  const handleUpdate = () => {
+  const handleSave = (e: any) => {
+    e.preventDefault()
+    setUser(form)
     localStorage.setItem('mauktion-user', JSON.stringify(form))
-    alert('Tiedot päivitetty')
+    alert('Tiedot tallennettu!')
+  }
+
+  const handleDownloadReceipt = (product: Product) => {
+    generateReceipt(product, user?.name || 'Asiakas')
   }
 
   const givenReviews = reviews.filter(r => r.reviewer === user?.name)
@@ -44,88 +56,104 @@ export default function Profile() {
     : '-'
 
   return (
-    <main className="p-6 max-w-3xl mx-auto space-y-12">
-      <h1 className="text-2xl font-bold">Profiili</h1>
+    <>
+      <main className="p-6 max-w-3xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Profiili</h1>
 
-      <section>
-        <h2 className="font-semibold mb-2">Omat tiedot</h2>
-        <div className="space-y-2">
-          <input name="name" value={form.name} onChange={handleFormChange} placeholder="Nimi" className="border rounded w-full p-2" />
-          <input name="email" value={form.email} onChange={handleFormChange} placeholder="Sähköposti" className="border rounded w-full p-2" />
-          <input name="password" value={form.password} onChange={handleFormChange} type="password" placeholder="Salasana" className="border rounded w-full p-2" />
-          <button onClick={handleUpdate} className="bg-blue-600 text-white px-4 py-2 rounded">Tallenna</button>
-        </div>
-      </section>
+        <form onSubmit={handleSave} className="space-y-4 mb-10">
+          <div>
+            <label className="block font-medium">Nimi</label>
+            <input
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              className="w-full border rounded p-2"
+              required
+            />
+          </div>
 
-      <section>
-        <h2 className="font-semibold mb-2">Ostohistoria</h2>
-        {purchases.length === 0 ? <p>Ei ostoksia.</p> : (
-          <ul className="space-y-2">
-            {purchases.map((p, idx) => {
-              const alreadyReviewed = reviews.some(r => r.productId === p.id && r.reviewer === user?.name)
-              return (
-                <li key={idx} className="border rounded p-3">
-                  <p><strong>{p.name}</strong> – {p.price}</p>
-                  <button
-                    onClick={() => generateReceipt(p, user?.name)}
-                    className="text-sm text-blue-600 underline mt-1"
-                  >
-                    Lataa kuitti (PDF)
-                  </button>
-                  {!alreadyReviewed && (
-                    <a
-                      href={`/review/${p.id}`}
-                      className="block text-sm text-green-600 underline mt-1"
-                    >
-                      Kirjoita arvostelu
-                    </a>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </section>
+          <div>
+            <label className="block font-medium">Sähköposti</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              className="w-full border rounded p-2"
+              required
+            />
+          </div>
 
-      <section>
-        <h2 className="font-semibold mb-2">Myyntihistoria</h2>
-        {sales.length === 0 ? <p>Ei myyntejä.</p> : (
-          <ul className="space-y-2">
-            {sales.map((p, idx) => (
-              <li key={idx} className="border rounded p-3">
-                <p><strong>{p.name}</strong> – {p.price}</p>
-                <p className="text-sm text-gray-600">Myyty: {new Date(p.soldAt).toLocaleString()}</p>
-                <button
-                  onClick={() => generateReceipt(p, 'Ostaja')}
-                  className="text-sm text-blue-600 underline mt-1"
-                >
-                  Lataa kuitti (PDF)
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+          <div className="flex gap-4 items-center">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="accountType"
+                value="individual"
+                checked={form.accountType === 'individual'}
+                onChange={handleChange}
+              />
+              Yksityishenkilö
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="accountType"
+                value="company"
+                checked={form.accountType === 'company'}
+                onChange={handleChange}
+              />
+              Yritys
+            </label>
+          </div>
 
-      <section>
-        <h2 className="font-semibold mb-2">Saadut arvostelut (keskiarvo: ⭐ {avgRating})</h2>
-        {receivedReviews.length === 0 ? <p>Ei arvosteluja.</p> : (
+          {form.accountType === 'company' && (
+            <>
+              <div>
+                <label className="block font-medium">Y-tunnus</label>
+                <input
+                  type="text"
+                  name="businessId"
+                  value={form.businessId || ''}
+                  onChange={handleChange}
+                  className="w-full border rounded p-2"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium">Yrityksen logo (URL tai tiedostopolku)</label>
+                <input
+                  type="text"
+                  name="companyLogo"
+                  value={form.companyLogo || ''}
+                  onChange={handleChange}
+                  className="w-full border rounded p-2"
+                />
+              </div>
+            </>
+          )}
+
+          <button className="bg-blue-600 text-white px-6 py-2 rounded">Tallenna tiedot</button>
+        </form>
+
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-2">Saadut arvostelut</h2>
+          <p className="mb-2">Keskimääräinen arvosana: ⭐ {avgRating} / 5</p>
           <ul className="space-y-2">
             {receivedReviews.map((r, idx) => (
               <li key={idx} className="border rounded p-3">
                 <p>Tuote: <strong>{r.productName}</strong></p>
-                <p>Ostaja: {r.reviewer}</p>
                 <p>Arvosana: ⭐ {r.rating} / 5</p>
                 <p className="text-sm text-gray-600">{r.comment}</p>
               </li>
             ))}
           </ul>
-        )}
-      </section>
+        </div>
 
-      <section>
-        <h2 className="font-semibold mb-2">Antamasi arvostelut</h2>
-        {givenReviews.length === 0 ? <p>Et ole vielä antanut arvosteluja.</p> : (
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-2">Antamasi arvostelut</h2>
           <ul className="space-y-2">
             {givenReviews.map((r, idx) => (
               <li key={idx} className="border rounded p-3">
@@ -136,8 +164,44 @@ export default function Profile() {
               </li>
             ))}
           </ul>
-        )}
-      </section>
-    </main>
+        </div>
+
+        <div className="mb-10">
+          <h2 className="text-xl font-semibold mb-2">Myyntihistoria</h2>
+          <ul className="space-y-2">
+            {sales.map((s, idx) => (
+              <li key={idx} className="border rounded p-3">
+                <p><strong>{s.name}</strong> – {s.price}</p>
+                <p>Myyty: {s.soldAt ? new Date(s.soldAt).toLocaleString() : '-'}</p>
+                <button
+                  onClick={() => handleDownloadReceipt(s)}
+                  className="text-blue-600 underline text-sm mt-1"
+                >
+                  Lataa kuitti (PDF)
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Ostohistoria</h2>
+          <ul className="space-y-2">
+            {purchases.map((p, idx) => (
+              <li key={idx} className="border rounded p-3">
+                <p><strong>{p.name}</strong> – {p.price}</p>
+                <p>Ostettu: {p.purchasedAt ? new Date(p.purchasedAt).toLocaleString() : '-'}</p>
+                <button
+                  onClick={() => handleDownloadReceipt(p)}
+                  className="text-blue-600 underline text-sm mt-1"
+                >
+                  Lataa kuitti (PDF)
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </main>
+    </>
   )
 }
