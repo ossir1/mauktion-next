@@ -23,3 +23,8 @@ export type Review = {
   reviewer: string; // käyttäjän nimi, joka kirjoitti arvostelun
   target: string;   // käyttäjän nimi, jota arvostelu koskee
 };
+
+export type Purchase = Product & {
+  buyer: string
+  purchasedAt: string
+}
