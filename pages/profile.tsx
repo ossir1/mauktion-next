@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { Product, Purchase, Review } from '@/types';
-import { generateReceipt } from '@/utils/receipt';
+import { Product, Purchase, Review } from '/types';
+import { generateReceipt } from '/utils/receipt';
 
 export default function ProfilePage() {
   const router = useRouter();
