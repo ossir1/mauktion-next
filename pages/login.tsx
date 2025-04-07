@@ -1,64 +1,80 @@
-import { useState } from 'react'
+// pages/login.tsx
 import { useRouter } from 'next/router'
+import { useEffect, useState } from 'react'
 
-export default function LoginPage() {
+export default function Login() {
   const router = useRouter()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
-  }
+  useEffect(() => {
+    const currentUser = localStorage.getItem('mauktion-user')
+    if (currentUser) {
+      router.push('/')
+    }
+  }, [router])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    const users = localStorage.getItem('mauktion-users')
-    if (!users) return setError('Ei käyttäjiä rekisteröitynä.')
+    const users = JSON.parse(localStorage.getItem('mauktion-users') || '[]')
+    const found = users.find((u: any) => u.email === email && u.password === password)
 
-    const parsed = JSON.parse(users)
-    const user = parsed.find((u: any) => u.email === form.email && u.password === form.password)
-    if (!user) return setError('Virheellinen sähköposti tai salasana.')
-
-    localStorage.setItem('mauktion-user', JSON.stringify(user))
-    router.push('/')
+    if (found) {
+      localStorage.setItem('mauktion-user', JSON.stringify(found))
+      router.push('/')
+    } else {
+      setError('Virheellinen sähköposti tai salasana')
+    }
   }
 
   return (
-    <main className="p-6 max-w-md mx-auto">
+    <main className="max-w-md mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Kirjaudu sisään</h1>
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="block font-medium">Sähköposti</label>
+          <label className="block mb-1 font-medium">Sähköposti</label>
           <input
             type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full border p-2 rounded"
+            required
           />
         </div>
+
         <div>
-          <label className="block font-medium">Salasana</label>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded"
-          />
+          <label className="block mb-1 font-medium">Salasana</label>
+          <div className="relative">
+            <input
+              type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border p-2 rounded pr-10"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute top-2 right-2 text-sm text-blue-600"
+            >
+              {showPassword ? 'Piilota' : 'Näytä'}
+            </button>
+          </div>
         </div>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+
+        {error && <p className="text-red-600">{error}</p>}
+
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           Kirjaudu
         </button>
       </form>
+
       <p className="mt-4 text-sm">
-        Eikö sinulla ole vielä tiliä?{' '}
+        Ei vielä käyttäjää?{' '}
         <a href="/register" className="text-blue-600 underline">
-          Luo käyttäjä
+          Rekisteröidy
         </a>
       </p>
     </main>
