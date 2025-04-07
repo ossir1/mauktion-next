@@ -1,47 +1,47 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import { Product } from '../types'
 import { v4 as uuidv4 } from 'uuid'
+import { Product } from '../types'
 
-export function generateReceipt(product: Product, buyerName: string = 'Asiakas') {
+export function generateReceipt(product: Product, buyerName = 'Asiakas') {
   const doc = new jsPDF()
-  const receiptId = uuidv4().split('-')[0].toUpperCase()
+  const receiptId = uuidv4().slice(0, 8).toUpperCase()
   const date = new Date().toLocaleString()
 
-  const vatAmount = parseFloat(product.vatAmount || '0')
-  const basePrice = parseFloat(product.price) - vatAmount
-  const totalPrice = parseFloat(product.price)
-
-  // Otsikko ja perustiedot
+  // Otsikko
   doc.setFontSize(18)
-  doc.text('Mauktion – Myyntikuitti', 14, 20)
+  doc.text('Ostokuitti', 14, 20)
 
-  doc.setFontSize(11)
-  doc.text(`Kuittinumero: ${receiptId}`, 14, 30)
-  doc.text(`Ostaja: ${buyerName}`, 14, 36)
-  doc.text(`Päivämäärä: ${date}`, 14, 42)
+  // Perustiedot
+  doc.setFontSize(12)
+  doc.text(`Kuitti-ID: ${receiptId}`, 14, 30)
+  doc.text(`Päivämäärä: ${date}`, 14, 37)
+  doc.text(`Ostaja: ${buyerName}`, 14, 44)
 
-  // Tuotetaulukko
+  // Tuotetiedot taulukkona
+  const tableY = 55
   autoTable(doc, {
-    startY: 50,
-    head: [['Tuote', 'Määrä', 'Yksikköhinta', 'ALV %', 'ALV €', 'Yhteensä']],
+    startY: tableY,
+    head: [['Tuote', 'Hinta (€)', 'ALV (%)', 'ALV (€)', 'Yhteensä']],
     body: [
       [
         product.name,
-        '1',
-        `${basePrice.toFixed(2)} €`,
+        product.price,
         product.vatRate || '24%',
-        `${vatAmount.toFixed(2)} €`,
-        `${totalPrice.toFixed(2)} €`
+        product.vatAmount || '0',
+        `${parseFloat(product.price).toFixed(2)} €`
       ]
     ]
   })
 
-  // Viite ja kiitos
-  doc.text(`Viitenumero: ${receiptId}`, 14, doc.lastAutoTable.finalY + 10)
-  doc.setFontSize(10)
-  doc.text('Kiitos ostoksestasi Mauktionissa!', 14, doc.lastAutoTable.finalY + 20)
+  const table = (doc as any).lastAutoTable // workaround: päästään finalY:hin
 
-  // Lataa PDF
-  doc.save('kuitti_mauktion.pdf')
+  // Viite ja kiitos
+  const footerY = table?.finalY ? table.finalY + 10 : tableY + 30
+  doc.setFontSize(12)
+  doc.text(`Viitenumero: ${receiptId}`, 14, footerY)
+  doc.setFontSize(10)
+  doc.text('Kiitos ostoksestasi Mauktionissa!', 14, footerY + 10)
+
+  doc.save(`kuitti_${receiptId}.pdf`)
 }
