@@ -1,25 +1,47 @@
 import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import { Product } from '../types'
+import { v4 as uuidv4 } from 'uuid'
 
-export function generateReceipt(product: any, buyerName: string = 'Asiakas') {
+export function generateReceipt(product: Product, buyerName: string = 'Asiakas') {
   const doc = new jsPDF()
+  const receiptId = uuidv4().split('-')[0].toUpperCase()
+  const date = new Date().toLocaleString()
 
+  const vatAmount = parseFloat(product.vatAmount || '0')
+  const basePrice = parseFloat(product.price) - vatAmount
+  const totalPrice = parseFloat(product.price)
+
+  // Otsikko ja perustiedot
   doc.setFontSize(18)
-  doc.text('Mauktion - Kuitti', 20, 20)
+  doc.text('Mauktion – Myyntikuitti', 14, 20)
 
-  doc.setFontSize(12)
-  doc.text(`Tuote: ${product.name}`, 20, 40)
-  doc.text(`Hinta: ${product.price}`, 20, 50)
-  doc.text(`Ostaja: ${buyerName}`, 20, 60)
-  doc.text(`Päivämäärä: ${new Date().toLocaleString()}`, 20, 70)
+  doc.setFontSize(11)
+  doc.text(`Kuittinumero: ${receiptId}`, 14, 30)
+  doc.text(`Ostaja: ${buyerName}`, 14, 36)
+  doc.text(`Päivämäärä: ${date}`, 14, 42)
 
-  // ALV-laskenta
-  const numericPrice = parseFloat(product.price.replace('€', '').replace(',', '.'))
-  const vatRate = product.vatRate ? parseFloat(product.vatRate.toString().replace('%', '')) : 24
-  const vatAmount = product.vatAmount
-    ? parseFloat(product.vatAmount)
-    : +(numericPrice - numericPrice / (1 + vatRate / 100)).toFixed(2)
+  // Tuotetaulukko
+  autoTable(doc, {
+    startY: 50,
+    head: [['Tuote', 'Määrä', 'Yksikköhinta', 'ALV %', 'ALV €', 'Yhteensä']],
+    body: [
+      [
+        product.name,
+        '1',
+        `${basePrice.toFixed(2)} €`,
+        product.vatRate || '24%',
+        `${vatAmount.toFixed(2)} €`,
+        `${totalPrice.toFixed(2)} €`
+      ]
+    ]
+  })
 
-  doc.text(`ALV: ${vatRate}% (${vatAmount.toFixed(2)} €)`, 20, 80)
+  // Viite ja kiitos
+  doc.text(`Viitenumero: ${receiptId}`, 14, doc.lastAutoTable.finalY + 10)
+  doc.setFontSize(10)
+  doc.text('Kiitos ostoksestasi Mauktionissa!', 14, doc.lastAutoTable.finalY + 20)
 
-  doc.save(`kuitti-${product.id}.pdf`)
+  // Lataa PDF
+  doc.save('kuitti_mauktion.pdf')
 }
