@@ -1,100 +1,105 @@
 import { useEffect, useState } from 'react'
+import { Review } from '../types'
 
-type Purchase = {
-  id: number
-  name: string
-  price: string
-  purchasedAt: string
-  review?: {
-    rating: number
-    comment: string
-  }
-}
-
-export default function ProfilePage() {
-  const [user, setUser] = useState<{ name: string } | null>(null)
-  const [purchases, setPurchases] = useState<Purchase[]>([])
-  const [reviews, setReviews] = useState<any[]>([])
+export default function Profile() {
+  const [user, setUser] = useState<any>(null)
+  const [sales, setSales] = useState<any[]>([])
+  const [givenReviews, setGivenReviews] = useState<Review[]>([])
+  const [receivedReviews, setReceivedReviews] = useState<Review[]>([])
   const [averageRating, setAverageRating] = useState<number | null>(null)
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('mauktion-user')
-    if (storedUser) {
-      setUser(JSON.parse(storedUser))
-    }
+    const stored = localStorage.getItem('mauktion-user')
+    if (stored) {
+      const parsedUser = JSON.parse(stored)
+      setUser(parsedUser)
 
-    const rawPurchases = localStorage.getItem('mauktion-purchases')
-    if (rawPurchases) {
-      setPurchases(JSON.parse(rawPurchases))
-    }
+      // Lataa myydyt tuotteet
+      const all = localStorage.getItem('mauktion-added-products')
+      if (all) {
+        const parsed = JSON.parse(all)
+        const mySales = parsed.filter((p: any) => p.soldAt && p.seller === parsedUser.name)
+        setSales(mySales)
+      }
 
-    const rawReviews = localStorage.getItem('mauktion-reviews')
-    if (rawReviews) {
-      const parsed = JSON.parse(rawReviews)
-      setReviews(parsed)
+      // Antamasi arvostelut
+      const reviews = localStorage.getItem('mauktion-reviews')
+      if (reviews) {
+        const parsed = JSON.parse(reviews)
+        const given = parsed.filter((r: Review) => r.buyer === parsedUser.name)
+        const received = parsed.filter((r: Review) => r.seller === parsedUser.name)
+        setGivenReviews(given)
+        setReceivedReviews(received)
 
-      if (parsed.length > 0) {
-        const avg =
-          parsed.reduce((acc: number, r: any) => acc + r.rating, 0) / parsed.length
-        setAverageRating(avg)
+        if (received.length > 0) {
+          const avg =
+            received.reduce((sum, r) => sum + Number(r.rating), 0) / received.length
+          setAverageRating(avg)
+        }
       }
     }
   }, [])
 
+  if (!user) return <div className="p-6">Et ole kirjautunut sisään.</div>
+
   return (
-    <main className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Profiili</h1>
+    <main className="p-6 max-w-3xl mx-auto space-y-10">
+      <h1 className="text-3xl font-bold mb-4">Profiili – {user.name}</h1>
 
-      {user && (
-        <p className="mb-2 text-gray-700">
-          👤 Käyttäjänimi: <span className="font-semibold">{user.name}</span>
-        </p>
-      )}
-
-      {averageRating !== null && (
-        <p className="mb-6 text-gray-700">
-          ⭐️ Saatujen arvostelujen keskiarvo: {averageRating.toFixed(1)} / 5
-        </p>
-      )}
-
-      <div className="border-t pt-4">
-        <h2 className="text-lg font-semibold mb-2">🛒 Ostohistoria</h2>
-        {purchases.length === 0 ? (
-          <p className="text-sm text-gray-500">Ei ostoksia vielä.</p>
+      {/* Myyntihistoria */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Myydyt tuotteesi</h2>
+        {sales.length === 0 ? (
+          <p className="text-gray-600">Ei vielä myytyjä tuotteita.</p>
         ) : (
           <ul className="space-y-2">
-            {purchases.map((p) => (
+            {sales.map((p) => (
               <li key={p.id} className="border p-3 rounded">
-                <div className="font-semibold">{p.name}</div>
-                <div className="text-sm text-gray-600">Hinta: {p.price}</div>
-                <div className="text-sm text-gray-600">
-                  Ostettu: {new Date(p.purchasedAt).toLocaleString()}
-                </div>
-                {p.review && (
-                  <div className="mt-1 text-sm text-gray-600">
-                    Arvostelu: {p.review.rating} / 5 – “{p.review.comment}”
-                  </div>
-                )}
+                <strong>{p.name}</strong> – myyty {new Date(p.soldAt).toLocaleDateString()}
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </section>
 
-      <div className="border-t pt-4 mt-6">
-        <h2 className="text-lg font-semibold mb-2">✍️ Antamasi arvostelut</h2>
-        {reviews.length === 0 ? (
-          <p className="text-sm text-gray-500">Et ole vielä antanut arvosteluja.</p>
+      {/* Antamasi arvostelut */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Antamasi arvostelut</h2>
+        {givenReviews.length === 0 ? (
+          <p className="text-gray-600">Et ole vielä antanut arvosteluja.</p>
         ) : (
           <ul className="space-y-2">
-            {reviews.map((r, i) => (
-              <li key={i} className="text-sm text-gray-700">
-                ⭐ {r.rating} / 5 – “{r.comment}”
+            {givenReviews.map((r, i) => (
+              <li key={i} className="border p-3 rounded">
+                <strong>{r.productName}</strong> – {r.rating}/5
+                <p className="text-sm text-gray-700">{r.comment}</p>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </section>
+
+      {/* Saadut arvostelut */}
+      <section>
+        <h2 className="text-xl font-semibold mb-2">Saamasi arvostelut</h2>
+        {receivedReviews.length === 0 ? (
+          <p className="text-gray-600">Et ole vielä saanut arvosteluja.</p>
+        ) : (
+          <>
+            <p className="text-sm text-gray-600 mb-2">
+              ⭐️ Keskiarvo: {averageRating?.toFixed(1)} / 5 ({receivedReviews.length} arvostelua)
+            </p>
+            <ul className="space-y-2">
+              {receivedReviews.map((r, i) => (
+                <li key={i} className="border p-3 rounded">
+                  <strong>{r.productName}</strong> – {r.rating}/5
+                  <p className="text-sm text-gray-700 italic">"{r.comment}"</p>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
     </main>
   )
 }
