@@ -1,21 +1,42 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Login() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const existingUser = localStorage.getItem('mauktion-user')
+    if (existingUser) {
+      setIsLoggedIn(true)
+    }
+  }, [])
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const user = {
-      name,
-      email
-    }
-
+    const user = { name, email }
     localStorage.setItem('mauktion-user', JSON.stringify(user))
     router.push('/')
+  }
+
+  if (isLoggedIn) {
+    return (
+      <main className="p-6 max-w-md mx-auto">
+        <h1 className="text-xl font-bold mb-4">Olet jo kirjautunut sisään</h1>
+        <button
+          onClick={() => {
+            localStorage.removeItem('mauktion-user')
+            setIsLoggedIn(false)
+          }}
+          className="bg-red-600 text-white px-4 py-2 rounded"
+        >
+          Kirjaudu ulos
+        </button>
+      </main>
+    )
   }
 
   return (
