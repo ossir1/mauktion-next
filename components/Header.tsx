@@ -5,11 +5,15 @@ import { useEffect, useState } from 'react'
 
 export default function Header() {
   const [user, setUser] = useState<{ name: string } | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const stored = localStorage.getItem('mauktion-user')
-    if (stored) {
-      setUser(JSON.parse(stored))
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('mauktion-user')
+      if (stored) {
+        setUser(JSON.parse(stored))
+      }
+      setLoading(false)
     }
   }, [])
 
@@ -24,38 +28,40 @@ export default function Header() {
         <Link href="/" className="text-2xl font-bold text-blue-700">
           Mauktion
         </Link>
-        <nav className="space-x-4 text-sm sm:text-base">
-          <Link href="/" className="text-gray-700 hover:text-blue-700">
-            Etusivu
-          </Link>
-          {user && (
-            <>
-              <Link href="/add" className="text-gray-700 hover:text-blue-700">
-                Lisää tuote
-              </Link>
-              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">
-                Omat tuotteet
-              </Link>
-              <Link href="/profile" className="text-gray-700 hover:text-blue-700">
-                Profiili
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-gray-700 hover:text-red-600"
-              >
-                Kirjaudu ulos
-              </button>
-              <span className="ml-2 text-blue-700 font-semibold hidden sm:inline">
-                Tervetuloa, {user.name}!
-              </span>
-            </>
-          )}
-          {!user && (
-            <Link href="/login" className="text-gray-700 hover:text-blue-700">
-              Kirjaudu / Rekisteröidy
+        {!loading && (
+          <nav className="space-x-4 text-sm sm:text-base">
+            <Link href="/" className="text-gray-700 hover:text-blue-700">
+              Etusivu
             </Link>
-          )}
-        </nav>
+
+            {user ? (
+              <>
+                <Link href="/add" className="text-gray-700 hover:text-blue-700">
+                  Lisää tuote
+                </Link>
+                <Link href="/my-products" className="text-gray-700 hover:text-blue-700">
+                  Omat tuotteet
+                </Link>
+                <Link href="/profile" className="text-gray-700 hover:text-blue-700">
+                  Profiili
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-700 hover:text-red-600"
+                >
+                  Kirjaudu ulos
+                </button>
+                <span className="ml-2 text-blue-700 font-semibold hidden sm:inline">
+                  Tervetuloa, {user.name}!
+                </span>
+              </>
+            ) : (
+              <Link href="/login" className="text-gray-700 hover:text-blue-700">
+                Kirjaudu / Rekisteröidy
+              </Link>
+            )}
+          </nav>
+        )}
       </div>
     </header>
   )
