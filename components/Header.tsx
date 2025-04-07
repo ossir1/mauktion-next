@@ -8,7 +8,11 @@ export default function Header() {
   useEffect(() => {
     const stored = localStorage.getItem('mauktion-user')
     if (stored) {
-      setUser(JSON.parse(stored))
+      try {
+        setUser(JSON.parse(stored))
+      } catch (e) {
+        console.error('Virhe käyttäjätiedon lukemisessa', e)
+      }
     }
   }, [])
 
@@ -24,29 +28,17 @@ export default function Header() {
           Mauktion
         </Link>
         <nav className="space-x-4 text-sm sm:text-base">
-          <Link href="/" className="text-gray-700 hover:text-blue-700">
-            Etusivu
-          </Link>
+          <Link href="/" className="text-gray-700 hover:text-blue-700">Etusivu</Link>
 
           {user ? (
             <>
-              <Link href="/add" className="text-gray-700 hover:text-blue-700">
-                Lisää tuote
-              </Link>
-              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">
-                Omat tuotteet
-              </Link>
-              <Link href="/profile" className="text-gray-700 hover:text-blue-700">
-                Profiili ({user.name})
-              </Link>
-              <button onClick={handleLogout} className="text-red-600 hover:underline">
-                Kirjaudu ulos
-              </button>
+              <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
+              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
+              <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili ({user.name})</Link>
+              <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
             </>
           ) : (
-            <Link href="/login" className="text-blue-600 hover:underline">
-              Kirjaudu / Rekisteröidy
-            </Link>
+            <Link href="/login" className="text-blue-600 hover:underline">Kirjaudu / Rekisteröidy</Link>
           )}
         </nav>
       </div>
