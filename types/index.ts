@@ -17,6 +17,7 @@ export type Product = {
 export type Review = {
   id: number;
   productId: number;
+  productName: string; // ← tämä rivi puuttui!
   rating: number;
   comment: string;
   reviewer: string; // käyttäjän nimi, joka kirjoitti arvostelun
