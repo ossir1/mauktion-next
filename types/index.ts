@@ -12,6 +12,8 @@ export type Product = {
   vatRate?: string;
   vatAmount?: string;
   soldAt?: string;
+  purchasedAt?: string;
+
 };
 
 export type Review = {
