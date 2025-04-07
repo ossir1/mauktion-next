@@ -1,20 +1,25 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
 export default function Header() {
   const [user, setUser] = useState<any>(null)
+  const router = useRouter()
 
+  // Päivitä käyttäjä aina reitin vaihtuessa
   useEffect(() => {
     const storedUser = localStorage.getItem('mauktion-user')
     if (storedUser) {
       setUser(JSON.parse(storedUser))
+    } else {
+      setUser(null)
     }
-  }, [])
+  }, [router.asPath]) // Reagoi navigointiin
 
   const handleLogout = () => {
     localStorage.removeItem('mauktion-user')
     setUser(null)
-    window.location.href = '/'
+    router.push('/')
   }
 
   return (
