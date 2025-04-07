@@ -2,11 +2,15 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function Header() {
-  const [username, setUsername] = useState<string | null>(null)
+  const [loggedIn, setLoggedIn] = useState(false)
+  const [username, setUsername] = useState('')
 
   useEffect(() => {
-    const stored = localStorage.getItem('mauktion-user')
-    setUsername(stored)
+    const user = localStorage.getItem('mauktion-user')
+    if (user) {
+      setLoggedIn(true)
+      setUsername(JSON.parse(user)?.name || '')
+    }
   }, [])
 
   const handleLogout = () => {
@@ -23,22 +27,17 @@ export default function Header() {
         <nav className="space-x-4">
           <Link href="/" className="text-gray-700 hover:text-blue-700">Etusivu</Link>
 
-          {username && (
+          {loggedIn && (
             <>
               <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
               <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
               <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
+              <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
             </>
           )}
 
-          {username ? (
-            <button onClick={handleLogout} className="text-red-600 hover:text-red-800">
-              Kirjaudu ulos ({username})
-            </button>
-          ) : (
-            <Link href="/login" className="text-blue-600 hover:underline">
-              Kirjaudu
-            </Link>
+          {!loggedIn && (
+            <Link href="/login" className="text-gray-700 hover:text-blue-700">Kirjaudu</Link>
           )}
         </nav>
       </div>
