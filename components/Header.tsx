@@ -2,10 +2,13 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 
 export default function Header() {
   const [user, setUser] = useState<{ name: string } | null>(null)
+  const router = useRouter()
 
+  // Päivitä käyttäjätiedot aina reitin vaihtuessa
   useEffect(() => {
     const storedUser = localStorage.getItem('mauktion-user')
     if (storedUser) {
@@ -13,17 +16,21 @@ export default function Header() {
         const parsed = JSON.parse(storedUser)
         if (parsed && parsed.name) {
           setUser(parsed)
+        } else {
+          setUser(null)
         }
-      } catch (e) {
-        console.error('Virhe käyttäjätietojen lukemisessa:', e)
-        localStorage.removeItem('mauktion-user')
+      } catch {
+        setUser(null)
       }
+    } else {
+      setUser(null)
     }
-  }, [])
+  }, [router.asPath])
 
   const handleLogout = () => {
     localStorage.removeItem('mauktion-user')
-    window.location.href = '/'
+    setUser(null)
+    router.push('/')
   }
 
   return (
