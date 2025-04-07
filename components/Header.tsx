@@ -1,4 +1,4 @@
-// components/Header.tsx
+'use client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
@@ -23,18 +23,28 @@ export default function Header() {
         <Link href="/" className="text-2xl font-bold text-blue-700">
           Mauktion
         </Link>
-        <nav className="space-x-4">
-          <Link href="/" className="text-gray-700 hover:text-blue-700">Etusivu</Link>
-          {user && (
+        <nav className="space-x-4 text-sm sm:text-base">
+          <Link href="/" className="text-gray-700 hover:text-blue-700">
+            Etusivu
+          </Link>
+
+          {user ? (
             <>
-              <Link href="/add" className="text-gray-700 hover:text-blue-700">Lisää tuote</Link>
-              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">Omat tuotteet</Link>
-              <Link href="/profile" className="text-gray-700 hover:text-blue-700">Profiili</Link>
-              <button onClick={handleLogout} className="text-red-600 hover:underline">Kirjaudu ulos</button>
+              <Link href="/add" className="text-gray-700 hover:text-blue-700">
+                Lisää tuote
+              </Link>
+              <Link href="/my-products" className="text-gray-700 hover:text-blue-700">
+                Omat tuotteet
+              </Link>
+              <Link href="/profile" className="text-gray-700 hover:text-blue-700">
+                Profiili ({user.name})
+              </Link>
+              <button onClick={handleLogout} className="text-red-600 hover:underline">
+                Kirjaudu ulos
+              </button>
             </>
-          )}
-          {!user && (
-            <Link href="/auth" className="text-gray-700 hover:text-blue-700">
+          ) : (
+            <Link href="/login" className="text-blue-600 hover:underline">
               Kirjaudu / Rekisteröidy
             </Link>
           )}
