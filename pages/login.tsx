@@ -1,81 +1,85 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Login() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [registering, setRegistering] = useState(false)
+  const [error, setError] = useState('')
+  const [alreadyLoggedIn, setAlreadyLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const existing = localStorage.getItem('mauktion-user')
+    if (existing) {
+      setAlreadyLoggedIn(true)
+    }
+  }, [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name || !email) return
+
+    if (!name || !email) {
+      setError('Nimi ja sähköposti vaaditaan')
+      return
+    }
 
     const user = { name, email }
     localStorage.setItem('mauktion-user', JSON.stringify(user))
     router.push('/')
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem('mauktion-user')
+    window.location.reload()
+  }
+
   return (
     <main className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">
-        {registering ? 'Rekisteröidy' : 'Kirjaudu sisään'}
-      </h1>
+      <h1 className="text-2xl font-bold mb-4">Kirjaudu / Rekisteröidy</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {alreadyLoggedIn ? (
         <div>
-          <label className="block font-medium">Nimi</label>
-          <input
-            type="text"
-            className="w-full border p-2 rounded"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          <p className="mb-4 text-green-700">Olet jo kirjautunut sisään.</p>
+          <button
+            onClick={handleLogout}
+            className="bg-red-600 text-white px-4 py-2 rounded"
+          >
+            Kirjaudu ulos
+          </button>
         </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-600">{error}</p>}
 
-        <div>
-          <label className="block font-medium">Sähköposti</label>
-          <input
-            type="email"
-            className="w-full border p-2 rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
+          <div>
+            <label className="block font-medium">Nimi</label>
+            <input
+              className="w-full border p-2 rounded"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded"
-        >
-          {registering ? 'Rekisteröidy' : 'Kirjaudu sisään'}
-        </button>
-      </form>
+          <div>
+            <label className="block font-medium">Sähköposti</label>
+            <input
+              className="w-full border p-2 rounded"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              required
+            />
+          </div>
 
-      <p className="mt-4 text-sm text-gray-600">
-        {registering ? (
-          <>
-            Onko sinulla jo tili?{' '}
-            <button
-              onClick={() => setRegistering(false)}
-              className="text-blue-600 underline"
-            >
-              Kirjaudu tästä
-            </button>
-          </>
-        ) : (
-          <>
-            Eikö sinulla ole vielä tiliä?{' '}
-            <button
-              onClick={() => setRegistering(true)}
-              className="text-blue-600 underline"
-            >
-              Rekisteröidy tästä
-            </button>
-          </>
-        )}
-      </p>
+          <button
+            type="submit"
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Kirjaudu sisään
+          </button>
+        </form>
+      )}
     </main>
   )
 }
