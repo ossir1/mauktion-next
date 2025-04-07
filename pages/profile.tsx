@@ -44,6 +44,7 @@ export default function Profile() {
         </p>
       )}
 
+      {/* Ostot */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Ostohistoria</h2>
         {purchases.length === 0 ? (
@@ -55,26 +56,29 @@ export default function Profile() {
                 <p className="font-medium">{p.name}</p>
                 <p className="text-sm text-gray-600">Ostettu: {new Date(p.purchasedAt).toLocaleString()}</p>
                 <p>Hinta: {p.price}</p>
-                {!hasReviewed(p.id) && (
-                  <a
-                    href={`/review/${p.id}`}
-                    className="text-blue-600 underline mt-2 inline-block"
+                <div className="flex gap-4 mt-2">
+                  {!hasReviewed(p.id) && (
+                    <a
+                      href={`/review/${p.id}`}
+                      className="text-blue-600 underline"
+                    >
+                      Kirjoita arvostelu
+                    </a>
+                  )}
+                  <button
+                    onClick={() => generateReceipt(p, user?.name || 'Asiakas')}
+                    className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
                   >
-                    Kirjoita arvostelu
-                  </a>
-                )}
-                <button
-                  onClick={() => generateReceipt(p, user?.name || 'Asiakas')}
-                  className="ml-4 bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                >
-                  Lataa kuitti (PDF)
-                </button>
+                    Lataa kuitti (PDF)
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
 
+      {/* Myynnit */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Myyntihistoria</h2>
         {sales.length === 0 ? (
@@ -100,6 +104,7 @@ export default function Profile() {
         )}
       </section>
 
+      {/* Arvostelut */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Antamasi arvostelut</h2>
         {givenReviews.length === 0 ? (
