@@ -16,8 +16,9 @@
     "jspdf-autotable": "^3.5.25",
     "uuid": "^9.0.0"
   },
-  "devDependencies": {
-    "@types/jspdf": "^2.0.0",
-    "typescript": "^5.4.2"
+"devDependencies": {
+  "@types/react": "^18.2.0",
+  "@types/node": "^20.4.2",
+  "typescript": "^5.4.2"
   }
 }
