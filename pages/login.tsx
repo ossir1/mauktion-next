@@ -1,77 +1,81 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/router'
 
 export default function Login() {
   const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [registering, setRegistering] = useState(false)
 
-  useEffect(() => {
-    const existingUser = localStorage.getItem('mauktion-user')
-    if (existingUser) {
-      setIsLoggedIn(true)
-    }
-  }, [])
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!name || !email) return
 
     const user = { name, email }
     localStorage.setItem('mauktion-user', JSON.stringify(user))
     router.push('/')
   }
 
-  if (isLoggedIn) {
-    return (
-      <main className="p-6 max-w-md mx-auto">
-        <h1 className="text-xl font-bold mb-4">Olet jo kirjautunut sisään</h1>
-        <button
-          onClick={() => {
-            localStorage.removeItem('mauktion-user')
-            setIsLoggedIn(false)
-          }}
-          className="bg-red-600 text-white px-4 py-2 rounded"
-        >
-          Kirjaudu ulos
-        </button>
-      </main>
-    )
-  }
-
   return (
     <main className="p-6 max-w-md mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Kirjaudu / Rekisteröidy</h1>
-      <form onSubmit={handleLogin} className="space-y-4">
+      <h1 className="text-2xl font-bold mb-4">
+        {registering ? 'Rekisteröidy' : 'Kirjaudu sisään'}
+      </h1>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block font-medium mb-1">Nimi</label>
+          <label className="block font-medium">Nimi</label>
           <input
             type="text"
-            required
+            className="w-full border p-2 rounded"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full border p-2 rounded"
+            required
           />
         </div>
 
         <div>
-          <label className="block font-medium mb-1">Sähköposti</label>
+          <label className="block font-medium">Sähköposti</label>
           <input
             type="email"
-            required
+            className="w-full border p-2 rounded"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full border p-2 rounded"
+            required
           />
         </div>
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-600 text-white px-6 py-2 rounded"
         >
-          Kirjaudu sisään
+          {registering ? 'Rekisteröidy' : 'Kirjaudu sisään'}
         </button>
       </form>
+
+      <p className="mt-4 text-sm text-gray-600">
+        {registering ? (
+          <>
+            Onko sinulla jo tili?{' '}
+            <button
+              onClick={() => setRegistering(false)}
+              className="text-blue-600 underline"
+            >
+              Kirjaudu tästä
+            </button>
+          </>
+        ) : (
+          <>
+            Eikö sinulla ole vielä tiliä?{' '}
+            <button
+              onClick={() => setRegistering(true)}
+              className="text-blue-600 underline"
+            >
+              Rekisteröidy tästä
+            </button>
+          </>
+        )}
+      </p>
     </main>
   )
 }
